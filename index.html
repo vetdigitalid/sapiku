@@ -17,8 +17,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        
-        /* CSS KHUSUS CETAK / PRINT PDF */
         @media print {
             .no-print, header, nav, footer, #authScreen, .fixed { display: none !important; }
             #appScreen { display: none !important; }
@@ -33,7 +31,6 @@
     <div id="authScreen" class="fixed inset-0 bg-slate-900/90 z-50 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-5">
             <div class="text-center space-y-2">
-                <!-- Logo Gambar -->
                 <div class="w-16 h-16 rounded-2xl bg-white mx-auto flex items-center justify-center shadow-md overflow-hidden p-1 border border-slate-100">
                     <img src="logo.png" alt="SapiKu Logo" class="w-full h-full object-contain">
                 </div>
@@ -41,7 +38,6 @@
                 <p class="text-xs text-slate-500">Platform Manajemen Peternakan Sapi Modern</p>
             </div>
 
-            <!-- Auth Form -->
             <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-3 text-xs">
                 <div>
                     <label class="block font-semibold text-slate-700 mb-1">Email Peternakan</label>
@@ -61,6 +57,43 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- SUBSCRIPTION PAYWALL MODAL (MUNCUL OTOMATIS JIKA TRIAL HABIS) -->
+    <div id="paywallModal" class="fixed inset-0 bg-slate-900/90 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4 text-center">
+            <div class="w-14 h-14 bg-amber-100 text-amber-600 rounded-2xl mx-auto flex items-center justify-center text-2xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-base text-slate-900">Masa Uji Coba (Free Trial) Berakhir</h3>
+                <p class="text-xs text-slate-500 mt-1">Masa aktif gratis 14 hari Anda telah usai. Lanjutkan langganan untuk terus mengelola ternak dan mencetak laporan resmi.</p>
+            </div>
+
+            <div class="space-y-3 text-left pt-2">
+                <!-- Pilihan 1: Bulanan -->
+                <div class="border border-slate-200 rounded-xl p-3.5 hover:border-emerald-600 transition cursor-pointer bg-slate-50" onclick="payViaWA('Paket Bulanan - Rp 35.000')">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-xs text-slate-900">Paket Mandiri (Bulanan)</span>
+                        <span class="text-xs font-bold text-emerald-600">Rp 35.000 / bln</span>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-0.5">Akses penuh seluruh fitur manajemen & kalkulator.</p>
+                </div>
+
+                <!-- Pilihan 2: Tahunan (Promo) -->
+                <div class="border-2 border-emerald-600 rounded-xl p-3.5 bg-emerald-50/50 shadow-xs relative cursor-pointer" onclick="payViaWA('Paket Promo Tahunan - Rp 349.000')">
+                    <span class="absolute -top-2.5 right-4 bg-emerald-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">🔥 HEMAT & FAVORIT</span>
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-xs text-emerald-900">Paket Promo Tahunan</span>
+                        <span class="text-xs font-bold text-emerald-700">Rp 349.000 / thn</span>
+                    </div>
+                    <p class="text-[10px] text-emerald-800 mt-0.5">Lebih hemat dan bebas repot perpanjang tiap bulan.</p>
+                </div>
+            </div>
+
+            <p class="text-[10px] text-slate-400">Klik salah satu paket di atas untuk konfirmasi pembayaran otomatis via WhatsApp ke drh. Najib.</p>
+            <button onclick="handleLogout()" class="text-xs text-rose-600 font-semibold hover:underline pt-2">Keluar / Ganti Akun</button>
         </div>
     </div>
 
@@ -91,6 +124,12 @@
                 </div>
             </div>
         </header>
+
+        <!-- BANNER STATUS TRIAL 14 HARI -->
+        <div id="trialBanner" class="bg-amber-50 border-b border-amber-200 px-4 py-2 text-center text-[11px] font-medium text-amber-800 flex justify-between items-center max-w-md mx-auto w-full no-print">
+            <span>🎁 Status: <b id="trialDaysLeft">Menghitung...</b> masa uji coba gratis.</span>
+            <button onclick="scrollToReports()" class="bg-amber-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg">Langganan</button>
+        </div>
 
         <!-- Navigation Tabs -->
         <nav class="bg-white border-b border-slate-200 sticky top-[61px] z-20 no-print">
@@ -186,7 +225,7 @@
                 </div>
             </div>
 
-            <!-- TAB 2: KARTU SAPI (LIST) -->
+            <!-- TAB 2: KARTU SAPI -->
             <div id="content-cows" class="hidden space-y-3">
                 <div class="flex items-center justify-between">
                     <h3 class="font-bold text-sm text-slate-900">Daftar Sapi Ternak Saya</h3>
@@ -221,9 +260,9 @@
                 </div>
             </div>
 
-            <!-- TAB 4: LAPORAN & EKSPOR -->
+            <!-- TAB 4: LAPORAN & LANGGANAN -->
             <div id="content-reports" class="hidden space-y-4">
-                <h3 class="font-bold text-sm text-slate-900">Ekspor Data & Laporan Peternakan</h3>
+                <h3 class="font-bold text-sm text-slate-900">Ekspor Data & Langganan SapiKu</h3>
                 
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs space-y-3">
                     <div class="flex items-center gap-3">
@@ -254,6 +293,24 @@
                         <i class="fa-solid fa-print"></i> Cetak / Simpan PDF
                     </button>
                 </div>
+
+                <!-- KOTAK PILIHAN LANGGANAN DI MENU LAPORAN -->
+                <div class="bg-gradient-to-br from-emerald-50 to-amber-50 p-4 rounded-2xl border border-emerald-200 space-y-3">
+                    <h4 class="font-bold text-xs text-emerald-900 flex items-center gap-1.5">
+                        <i class="fa-solid fa-crown text-amber-500"></i> Perpanjang Paket Langganan SapiKu
+                    </h4>
+                    <p class="text-[11px] text-slate-600">Pilih paket di bawah untuk melanjutkan akses penuh setelah masa uji coba:</p>
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <button onclick="payViaWA('Paket Bulanan - Rp 35.000')" class="bg-white border border-slate-200 hover:border-emerald-600 p-2.5 rounded-xl text-left transition shadow-xs">
+                            <div class="text-[10px] font-semibold text-slate-500">Bulanan</div>
+                            <div class="text-xs font-bold text-slate-900">Rp 35.000</div>
+                        </button>
+                        <button onclick="payViaWA('Paket Promo Tahunan - Rp 349.000')" class="bg-emerald-600 hover:bg-emerald-700 text-white p-2.5 rounded-xl text-left transition shadow-xs">
+                            <div class="text-[10px] font-semibold text-emerald-200">Promo Tahunan</div>
+                            <div class="text-xs font-bold">Rp 349.000</div>
+                        </button>
+                    </div>
+                </div>
             </div>
 
         </main>
@@ -282,7 +339,7 @@
         </div>
     </div>
 
-    <!-- ELEMEN KHUSUS DOKUMEN LAPORAN RESMI YANG AKAN DICETAK/PDF -->
+    <!-- ELEMEN LAPORAN RESMI (CETAK / PDF) -->
     <div id="printableReport" class="hidden p-8 max-w-3xl mx-auto bg-white text-slate-900">
         <div class="border-b-2 border-emerald-600 pb-4 mb-6 flex justify-between items-center">
             <div class="flex items-center gap-3">
@@ -353,7 +410,6 @@
     </div>
 
     <!-- MODALS -->
-    <!-- MODAL 1: REKAM EVENT -->
     <div id="eventModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-2xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 no-print">
         <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl">
             <div class="flex items-center justify-between mb-4">
@@ -393,7 +449,6 @@
         </div>
     </div>
 
-    <!-- MODAL 2: CATAT PRODUKSI SUSU -->
     <div id="milkModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-2xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 no-print">
         <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl">
             <div class="flex items-center justify-between mb-4">
@@ -427,7 +482,6 @@
         </div>
     </div>
 
-    <!-- MODAL 3: TAMBAH SAPI BARU -->
     <div id="cowModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-2xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 no-print">
         <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl">
             <div class="flex items-center justify-between mb-4">
@@ -471,7 +525,6 @@
         </div>
     </div>
 
-    <!-- MODAL 4: DETAIL SAPI & RIWAYAT EVENT -->
     <div id="detailModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-2xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 no-print">
         <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl max-h-[85vh] overflow-y-auto">
             <div class="flex items-center justify-between mb-4 border-b pb-2">
@@ -508,11 +561,46 @@
             const { data: { session } } = await _supabase.auth.getSession();
             if (session) {
                 currentUser = session.user;
+                checkTrialStatus(currentUser);
                 showAppScreen();
             } else {
                 showAuthScreen();
             }
         });
+
+        // --- SISTEM CEK FREE TRIAL 14 HARI ---
+        function checkTrialStatus(user) {
+            // Mengambil tanggal pembuatan akun user dari metadata Supabase
+            const createdAt = new Date(user.created_at);
+            const now = new Date();
+            const diffTime = now - createdAt;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            const trialDaysLeft = 14 - diffDays;
+
+            const banner = document.getElementById('trialDaysLeft');
+            const paywall = document.getElementById('paywallModal');
+
+            if (trialDaysLeft > 0) {
+                banner.innerText = `Sisa ${trialDaysLeft} Hari`;
+                paywall.classList.add('hidden');
+            } else {
+                // Jika trial habis (> 14 hari), tampilkan paywall langganan
+                banner.innerText = `Masa Trial Habis`;
+                paywall.classList.remove('hidden');
+            }
+        }
+
+        // --- FUNGSI KLIK PEMBAYARAN VIA WHATSAPP ---
+        function payViaWA(paketName) {
+            const userEmail = currentUser ? currentUser.email : 'Peternak';
+            const phoneAdmin = '6281215667746'; // <--- Ganti dengan nomor WhatsApp Anda (format 62...)
+            const message = `Halo SapiKu, saya ingin melakukan konfirmasi pembayaran langganan aplikasi SapiKu untuk %0A*${paketName}*.%0A%0AEmail Akun Saya: ${userEmail}%0ABerikut saya lampirkan bukti transfernya. Terima kasih!`;
+            window.open(`https://wa.me/${phoneAdmin}?text=${message}`, '_blank');
+        }
+
+        function scrollToReports() {
+            switchTab('reports');
+        }
 
         function toggleAuthMode() {
             isRegisterMode = !isRegisterMode;
@@ -547,6 +635,7 @@
                     alert("Gagal masuk: " + error.message);
                 } else {
                     currentUser = data.user;
+                    checkTrialStatus(currentUser);
                     showAppScreen();
                 }
             }
