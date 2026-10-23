@@ -48,6 +48,13 @@
                     <input type="password" id="authPassword" placeholder="••••••••" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-medium focus:outline-none focus:border-emerald-600">
                 </div>
 
+                <!-- INPUT NOMOR WHATSAPP (Hanya tampil saat mode Daftar Baru) -->
+                <div id="phoneInputContainer" class="hidden">
+                    <label class="block font-semibold text-slate-700 mb-1">Nomor WhatsApp Aktif (untuk Notifikasi)</label>
+                    <input type="tel" id="authPhone" placeholder="Contoh: 081234567890" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-medium focus:outline-none focus:border-emerald-600">
+                    <small class="text-[10px] text-slate-400 mt-0.5 block">Digunakan untuk info masa aktif trial & pengingat otomatis.</small>
+                </div>
+
                 <div class="pt-2 space-y-2">
                     <button type="submit" id="authSubmitBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md transition">
                         Masuk ke Akun
@@ -611,13 +618,18 @@
             isRegisterMode = !isRegisterMode;
             const submitBtn = document.getElementById('authSubmitBtn');
             const toggleBtn = document.getElementById('authToggleBtn');
+            const phoneContainer = document.getElementById('phoneInputContainer');
             
             if (isRegisterMode) {
                 submitBtn.innerText = "Daftar Akun Baru";
                 toggleBtn.innerText = "Sudah punya akun? Masuk";
+                phoneContainer.classList.remove('hidden');
+                document.getElementById('authPhone').setAttribute('required', 'true');
             } else {
                 submitBtn.innerText = "Masuk ke Akun";
                 toggleBtn.innerText = "Belum punya akun? Daftar Baru";
+                phoneContainer.classList.add('hidden');
+                document.getElementById('authPhone').removeAttribute('required');
             }
         }
 
@@ -627,13 +639,30 @@
             const password = document.getElementById('authPassword').value;
 
             if (isRegisterMode) {
+                let phone = document.getElementById('authPhone').value.trim();
+                
+                if (phone.startsWith('0')) {
+                    phone = '62' + phone.slice(1);
+                }
+
                 const { data, error } = await _supabase.auth.signUp({ email, password });
                 if (error) {
                     alert("Gagal mendaftar: " + error.message);
-                } else {
-                    alert("Pendaftaran berhasil! Silakan periksa inbox email Anda untuk klik link verifikasi.");
-                    toggleAuthMode();
+                    return;
                 }
+
+                if (data.user) {
+                    const { error: profileError } = await _supabase
+                        .from('profiles')
+                        .upsert([{ id: data.user.id, phone: phone, subscription_status: 'trial' }]);
+                    
+                    if (profileError) {
+                        console.error("Gagal menyimpan profil nomor HP:", profileError.message);
+                    }
+                }
+
+                alert("Pendaftaran berhasil! Silakan periksa inbox email Anda untuk verifikasi.");
+                toggleAuthMode();
             } else {
                 const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
                 if (error) {
