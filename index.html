@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; scroll-behavior: smooth; }
         @media print {
             .no-print, header, nav, footer, #authScreen, .fixed { display: none !important; }
             #appScreen { display: none !important; }
@@ -264,6 +264,24 @@
             <div id="content-reports" class="hidden space-y-4">
                 <h3 class="font-bold text-sm text-slate-900">Ekspor Data & Langganan SapiKu</h3>
                 
+                <!-- KOTAK PILIHAN LANGGANAN DIPINDAHKAN KE PALING ATAS DI SINI -->
+                <div id="subscriptionSection" class="bg-gradient-to-br from-emerald-50 to-amber-50 p-4 rounded-2xl border border-emerald-200 space-y-3">
+                    <h4 class="font-bold text-xs text-emerald-900 flex items-center gap-1.5">
+                        <i class="fa-solid fa-crown text-amber-500"></i> Perpanjang Paket Langganan SapiKu
+                    </h4>
+                    <p class="text-[11px] text-slate-600">Pilih paket di bawah untuk melanjutkan akses penuh setelah masa uji coba:</p>
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <button onclick="payViaWA('Paket Bulanan - Rp 35.000')" class="bg-white border border-slate-200 hover:border-emerald-600 p-2.5 rounded-xl text-left transition shadow-xs cursor-pointer">
+                            <div class="text-[10px] font-semibold text-slate-500">Bulanan</div>
+                            <div class="text-xs font-bold text-slate-900">Rp 35.000</div>
+                        </button>
+                        <button onclick="payViaWA('Paket Promo Tahunan - Rp 349.000')" class="bg-emerald-600 hover:bg-emerald-700 text-white p-2.5 rounded-xl text-left transition shadow-xs cursor-pointer">
+                            <div class="text-[10px] font-semibold text-emerald-200">Promo Tahunan</div>
+                            <div class="text-xs font-bold">Rp 349.000</div>
+                        </button>
+                    </div>
+                </div>
+
                 <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs space-y-3">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">
@@ -292,24 +310,6 @@
                     <button onclick="printFullReport()" class="w-full bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold py-2.5 rounded-xl shadow-xs transition flex items-center justify-center gap-2">
                         <i class="fa-solid fa-print"></i> Cetak / Simpan PDF
                     </button>
-                </div>
-
-                <!-- KOTAK PILIHAN LANGGANAN DI MENU LAPORAN -->
-                <div class="bg-gradient-to-br from-emerald-50 to-amber-50 p-4 rounded-2xl border border-emerald-200 space-y-3">
-                    <h4 class="font-bold text-xs text-emerald-900 flex items-center gap-1.5">
-                        <i class="fa-solid fa-crown text-amber-500"></i> Perpanjang Paket Langganan SapiKu
-                    </h4>
-                    <p class="text-[11px] text-slate-600">Pilih paket di bawah untuk melanjutkan akses penuh setelah masa uji coba:</p>
-                    <div class="grid grid-cols-2 gap-2 pt-1">
-                        <button onclick="payViaWA('Paket Bulanan - Rp 35.000')" class="bg-white border border-slate-200 hover:border-emerald-600 p-2.5 rounded-xl text-left transition shadow-xs">
-                            <div class="text-[10px] font-semibold text-slate-500">Bulanan</div>
-                            <div class="text-xs font-bold text-slate-900">Rp 35.000</div>
-                        </button>
-                        <button onclick="payViaWA('Paket Promo Tahunan - Rp 349.000')" class="bg-emerald-600 hover:bg-emerald-700 text-white p-2.5 rounded-xl text-left transition shadow-xs">
-                            <div class="text-[10px] font-semibold text-emerald-200">Promo Tahunan</div>
-                            <div class="text-xs font-bold">Rp 349.000</div>
-                        </button>
-                    </div>
                 </div>
             </div>
 
@@ -570,7 +570,6 @@
 
         // --- SISTEM CEK FREE TRIAL 14 HARI ---
         function checkTrialStatus(user) {
-            // Mengambil tanggal pembuatan akun user dari metadata Supabase
             const createdAt = new Date(user.created_at);
             const now = new Date();
             const diffTime = now - createdAt;
@@ -584,7 +583,6 @@
                 banner.innerText = `Sisa ${trialDaysLeft} Hari`;
                 paywall.classList.add('hidden');
             } else {
-                // Jika trial habis (> 14 hari), tampilkan paywall langganan
                 banner.innerText = `Masa Trial Habis`;
                 paywall.classList.remove('hidden');
             }
@@ -593,13 +591,20 @@
         // --- FUNGSI KLIK PEMBAYARAN VIA WHATSAPP ---
         function payViaWA(paketName) {
             const userEmail = currentUser ? currentUser.email : 'Peternak';
-            const phoneAdmin = '6281215667746'; // <--- Ganti dengan nomor WhatsApp Anda (format 62...)
+            const phoneAdmin = '6281215667746'; 
             const message = `Halo SapiKu, saya ingin melakukan konfirmasi pembayaran langganan aplikasi SapiKu untuk %0A*${paketName}*.%0A%0AEmail Akun Saya: ${userEmail}%0ABerikut saya lampirkan bukti transfernya. Terima kasih!`;
             window.open(`https://wa.me/${phoneAdmin}?text=${message}`, '_blank');
         }
 
+        // --- TOMBOL LANGGANAN: PINDAH KE TAB LAPORAN & GULIR KE ATAS ---
         function scrollToReports() {
             switchTab('reports');
+            setTimeout(() => {
+                const section = document.getElementById('subscriptionSection');
+                if (section) {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 100);
         }
 
         function toggleAuthMode() {
