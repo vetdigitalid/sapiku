@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SapiKu - Platform Manajemen Sapi Modern</title>
+    
+    <!-- PWA Manifest & Settings (Agar bisa di-install di HP) -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#059669">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SapiKu">
+    <link rel="apple-touch-icon" href="logo.png">
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <!-- Chart.js CDN -->
@@ -119,7 +128,7 @@
                     </div>
                     <div>
                         <h1 class="font-bold text-slate-900 leading-tight text-lg">SapiKu</h1>
-                        <!-- NAMA FARM KUSTOM (Ganti Email) -->
+                        <!-- NAMA FARM KUSTOM -->
                         <button onclick="openModal('editFarmModal')" class="flex items-center gap-1 text-[10px] text-emerald-700 font-bold bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded-full transition text-left cursor-pointer" title="Klik untuk ubah nama farm">
                             <i class="fa-solid fa-house-chimney"></i> <span id="userFarmBadge">Memuat Farm...</span>
                         </button>
