@@ -19,674 +19,160 @@
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
 
-    <!-- Top Navigation -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
-        <div class="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-600/20">
-                    <i class="fa-solid fa-cow text-xl"></i>
+    <!-- SCREEN 1: AUTHENTICATION (LOGIN / REGISTER) -->
+    <div id="authScreen" class="fixed inset-0 bg-slate-900/90 z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-5">
+            <div class="text-center space-y-1">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-600 mx-auto flex items-center justify-center text-white shadow-lg shadow-emerald-600/30 mb-2">
+                    <i class="fa-solid fa-cow text-2xl"></i>
+                </div>
+                <h2 class="text-xl font-bold text-slate-900">Selamat Datang di SapiKu</h2>
+                <p class="text-xs text-slate-500">Platform Manajemen Peternakan Sapi Modern</p>
+            </div>
+
+            <!-- Auth Form -->
+            <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Email Peternakan</label>
+                    <input type="email" id="authEmail" placeholder="peternak@email.com" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-medium focus:outline-none focus:border-emerald-600">
                 </div>
                 <div>
-                    <h1 class="font-bold text-slate-900 leading-tight text-lg">SapiKu</h1>
-                    <span class="text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-full inline-block mt-0.5">SaaS Peternakan</span>
-                </div>
-            </div>
-            <div class="flex items-center gap-2">
-                <button onclick="openModal('milkModal')" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold px-2.5 py-2 rounded-lg flex items-center gap-1 transition shadow-sm">
-                    <i class="fa-solid fa-glass-water"></i> Catat Susu
-                </button>
-                <button onclick="openModal('eventModal')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-2.5 py-2 rounded-lg flex items-center gap-1 transition shadow-sm">
-                    <i class="fa-solid fa-plus"></i> Event
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- Navigation Tabs -->
-    <nav class="bg-white border-b border-slate-200 sticky top-[61px] z-20">
-        <div class="max-w-md mx-auto px-4 flex justify-around">
-            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="flex-1 py-3 text-center text-xs font-bold text-emerald-600 border-b-2 border-emerald-600 transition flex items-center justify-center gap-1.5">
-                <i class="fa-solid fa-chart-pie"></i> Dashboard
-            </button>
-            <button onclick="switchTab('cows')" id="tab-cows" class="flex-1 py-3 text-center text-xs font-semibold text-slate-500 border-b-2 border-transparent transition flex items-center justify-center gap-1.5">
-                <i class="fa-solid fa-list"></i> Kartu Sapi
-            </button>
-            <button onclick="switchTab('analytics')" id="tab-analytics" class="flex-1 py-3 text-center text-xs font-semibold text-slate-500 border-b-2 border-transparent transition flex items-center justify-center gap-1.5">
-                <i class="fa-solid fa-chart-line"></i> Analitik
-            </button>
-        </div>
-    </nav>
-
-    <!-- Main Content Container -->
-    <main class="max-w-md mx-auto w-full p-4 flex-1 pb-24">
-
-        <!-- TAB 1: DASHBOARD -->
-        <div id="content-dashboard" class="space-y-4">
-            <!-- Hero Banner -->
-            <div class="bg-gradient-to-br from-emerald-900 via-emerald-800 to-slate-900 rounded-2xl p-5 text-white shadow-xl relative overflow-hidden">
-                <div class="absolute right-[-20px] bottom-[-20px] opacity-10 text-9xl">
-                    <i class="fa-solid fa-cow"></i>
-                </div>
-                <div class="relative z-10">
-                    <span class="bg-emerald-500/30 text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider inline-block mb-2 border border-emerald-400/20">
-                        ✨ Platform Manajemen Sapi Modern
-                    </span>
-                    <h2 class="text-xl font-bold tracking-tight leading-snug mb-1">
-                        Peternakan Anda, lebih cerdas dengan SapiKu.
-                    </h2>
-                    <p class="text-xs text-slate-300 leading-relaxed">
-                        Pantau reproduksi, kesehatan, dan statistik produksi susu harian secara real-time dalam satu platform terpadu.
-                    </p>
-                </div>
-            </div>
-
-            <!-- Stats Grid -->
-            <div class="grid grid-cols-2 gap-3">
-                <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs font-medium text-slate-500">Total Sapi Aktif</span>
-                        <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs">
-                            <i class="fa-solid fa-cow"></i>
-                        </div>
-                    </div>
-                    <div class="flex items-baseline gap-2">
-                        <span id="total-cows-count" class="text-2xl font-bold text-slate-900">...</span>
-                        <span class="text-[11px] text-emerald-600 font-semibold">Database</span>
-                    </div>
+                    <label class="block font-semibold text-slate-700 mb-1">Kata Sandi</label>
+                    <input type="password" id="authPassword" placeholder="••••••••" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-medium focus:outline-none focus:border-emerald-600">
                 </div>
 
-                <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs font-medium text-slate-500">Produksi Hari Ini</span>
-                        <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-xs">
-                            <i class="fa-solid fa-glass-water"></i>
-                        </div>
-                    </div>
-                    <div class="flex items-baseline gap-2">
-                        <span id="today-milk-total" class="text-2xl font-bold text-slate-900">0</span>
-                        <span class="text-xs text-slate-500">Liter</span>
-                    </div>
-                    <div class="text-[10px] text-emerald-600 font-semibold mt-1">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> Real-time Log
-                    </div>
+                <div class="pt-2 space-y-2">
+                    <button type="submit" id="authSubmitBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md transition">
+                        Masuk ke Akun
+                    </button>
+                    <button type="button" onclick="toggleAuthMode()" id="authToggleBtn" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-2.5 rounded-xl transition">
+                        Belum punya akun? Daftar Baru
+                    </button>
                 </div>
-            </div>
-
-            <!-- Aktivitas Terbaru Dinamis -->
-            <div class="bg-white rounded-xl border border-slate-200/80 shadow-xs p-4">
-                <div class="flex items-center justify-between mb-3">
-                    <h3 class="font-bold text-sm text-slate-900">Aktivitas Kandang Terakhir</h3>
-                    <span class="text-[10px] bg-emerald-50 text-emerald-600 font-bold px-2 py-0.5 rounded-full">Real-time Cloud</span>
-                </div>
-                <div id="recent-activities-list" class="space-y-2.5 text-xs">
-                    <div class="text-center text-slate-400 py-3">Memuat aktivitas terbaru...</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TAB 2: KARTU SAPI (LIST) -->
-        <div id="content-cows" class="hidden space-y-3">
-            <div class="flex items-center justify-between">
-                <h3 class="font-bold text-sm text-slate-900">Daftar Sapi Ternak (Database)</h3>
-                <button onclick="openModal('cowModal')" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1 transition">
-                    <i class="fa-solid fa-plus"></i> Tambah Sapi
-                </button>
-            </div>
-
-            <!-- Search box -->
-            <div class="relative">
-                <i class="fa-solid fa-search absolute left-3 top-3 text-slate-400 text-xs"></i>
-                <input type="text" id="cowSearchInput" oninput="filterCows()" placeholder="Cari nomor tag atau nama sapi..." class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs focus:outline-none focus:border-emerald-600">
-            </div>
-
-            <!-- List Sapi dari Database Supabase -->
-            <div id="supabase-cows-list" class="space-y-2">
-                <div class="bg-white p-4 rounded-xl border border-slate-200 text-center text-xs text-slate-500">
-                    Memuat data dari database...
-                </div>
-            </div>
-        </div>
-
-        <!-- TAB 3: ANALITIK -->
-        <div id="content-analytics" class="hidden space-y-4">
-            <h3 class="font-bold text-sm text-slate-900">Statistik & Analitik Susu</h3>
-            <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
-                <div class="flex items-center justify-between mb-3">
-                    <h4 class="text-xs font-bold text-slate-700">Tren Produksi 7 Hari Terakhir (Liter)</h4>
-                    <span class="text-[10px] bg-amber-50 text-amber-600 font-bold px-2 py-0.5 rounded-full">Live Data</span>
-                </div>
-                <div class="h-52 relative">
-                    <canvas id="milkChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-    </main>
-
-    <!-- Bottom Navigation Bar -->
-    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-30 shadow-lg">
-        <div class="max-w-md mx-auto px-4 py-2 flex justify-around">
-            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex flex-col items-center text-emerald-600 gap-1 text-[11px] font-bold">
-                <i class="fa-solid fa-house text-base"></i> Dashboard
-            </button>
-            <button onclick="switchTab('cows')" id="nav-cows" class="flex flex-col items-center text-slate-400 gap-1 text-[11px] font-medium">
-                <i class="fa-solid fa-cow text-base"></i> Kartu Sapi
-            </button>
-            <button onclick="openModal('eventModal')" class="flex flex-col items-center text-white -mt-5">
-                <div class="w-12 h-12 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-lg shadow-emerald-600/30 border-4 border-white">
-                    <i class="fa-solid fa-plus text-lg"></i>
-                </div>
-            </button>
-            <button onclick="switchTab('analytics')" id="nav-analytics" class="flex flex-col items-center text-slate-400 gap-1 text-[11px] font-medium">
-                <i class="fa-solid fa-chart-line text-base"></i> Analitik
-            </button>
-            <button onclick="alert('Menu Profil')" class="flex flex-col items-center text-slate-400 gap-1 text-[11px] font-medium">
-                <i class="fa-solid fa-user-gear text-base"></i> Profil
-            </button>
-        </div>
-    </div>
-
-    <!-- MODAL 1: REKAM EVENT -->
-    <div id="eventModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-2xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                    <i class="fa-solid fa-file-medical text-emerald-600"></i> Rekam Event Kandang
-                </h3>
-                <button onclick="closeModal('eventModal')" class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <form id="eventForm" onsubmit="handleEventSubmit(event)" class="space-y-3 text-xs">
-                <div>
-                    <label class="block font-semibold text-slate-700 mb-1">Jenis Event</label>
-                    <select id="eventType" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-emerald-600">
-                        <option value="Inseminasi Buatan (IB)">Inseminasi Buatan (IB)</option>
-                        <option value="Pemeriksaan Kebuntingan (PKB)">Pemeriksaan Kebuntingan (PKB)</option>
-                        <option value="Penanganan Medis / Sakit">Penanganan Medis / Sakit</option>
-                        <option value="Kelahiran (Calving)">Kelahiran (Calving)</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block font-semibold text-slate-700 mb-1">Nomor Sapi / Tag</label>
-                    <input type="text" id="tagNumber" placeholder="Contoh: #011" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-emerald-600">
-                </div>
-                <div>
-                    <label class="block font-semibold text-slate-700 mb-1">Keterangan / Hasil Catatan</label>
-                    <textarea id="eventNotes" rows="3" placeholder="Masukkan detail catatan..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-emerald-600"></textarea>
-                </div>
-                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md transition mt-2">
-                    Simpan Event ke Cloud
-                </button>
             </form>
         </div>
     </div>
 
-    <!-- MODAL 2: CATAT PRODUKSI SUSU -->
-    <div id="milkModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-2xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                    <i class="fa-solid fa-glass-water text-amber-500"></i> Catat Hasil Perahan Susu
-                </h3>
-                <button onclick="closeModal('milkModal')" class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
-                    <i class="fa-solid fa-xmark"></i>
+    <!-- MAIN APP SCREEN (Hanya tampil saat sudah login) -->
+    <div id="appScreen" class="hidden min-h-screen flex flex-col">
+        <!-- Top Navigation -->
+        <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+            <div class="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-600/20">
+                        <i class="fa-solid fa-cow text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-slate-900 leading-tight text-lg">SapiKu</h1>
+                        <span id="userEmailBadge" class="text-[10px] text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-full inline-block truncate max-w-[120px]">Memuat...</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <button onclick="openModal('milkModal')" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold px-2.5 py-2 rounded-lg flex items-center gap-1 transition shadow-sm">
+                        <i class="fa-solid fa-glass-water"></i> Catat Susu
+                    </button>
+                    <button onclick="openModal('eventModal')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-2.5 py-2 rounded-lg flex items-center gap-1 transition shadow-sm">
+                        <i class="fa-solid fa-plus"></i> Event
+                    </button>
+                    <button onclick="handleLogout()" title="Keluar Akun" class="bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold p-2 rounded-lg transition border border-rose-200">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="bg-white border-b border-slate-200 sticky top-[61px] z-20">
+            <div class="max-w-md mx-auto px-4 flex justify-around">
+                <button onclick="switchTab('dashboard')" id="tab-dashboard" class="flex-1 py-3 text-center text-xs font-bold text-emerald-600 border-b-2 border-emerald-600 transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-chart-pie"></i> Dashboard
+                </button>
+                <button onclick="switchTab('cows')" id="tab-cows" class="flex-1 py-3 text-center text-xs font-semibold text-slate-500 border-b-2 border-transparent transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-list"></i> Kartu Sapi
+                </button>
+                <button onclick="switchTab('analytics')" id="tab-analytics" class="flex-1 py-3 text-center text-xs font-semibold text-slate-500 border-b-2 border-transparent transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-chart-line"></i> Analitik
                 </button>
             </div>
-            <form id="milkForm" onsubmit="handleMilkSubmit(event)" class="space-y-3 text-xs">
-                <div>
-                    <label class="block font-semibold text-slate-700 mb-1">Nomor Sapi / Tag</label>
-                    <input type="text" id="milkTagNumber" placeholder="Contoh: #011" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-emerald-600">
+        </nav>
+
+        <!-- Main Content Container -->
+        <main class="max-w-md mx-auto w-full p-4 flex-1 pb-24">
+
+            <!-- TAB 1: DASHBOARD -->
+            <div id="content-dashboard" class="space-y-4">
+                <!-- Hero Banner -->
+                <div class="bg-gradient-to-br from-emerald-900 via-emerald-800 to-slate-900 rounded-2xl p-5 text-white shadow-xl relative overflow-hidden">
+                    <div class="absolute right-[-20px] bottom-[-20px] opacity-10 text-9xl">
+                        <i class="fa-solid fa-cow"></i>
+                    </div>
+                    <div class="relative z-10">
+                        <span class="bg-emerald-500/30 text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider inline-block mb-2 border border-emerald-400/20">
+                            ✨ SaaS Peternakan Terpadu
+                        </span>
+                        <h2 class="text-xl font-bold tracking-tight leading-snug mb-1">
+                            Peternakan Anda, lebih cerdas dengan SapiKu.
+                        </h2>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Pantau reproduksi, kesehatan, dan statistik produksi susu harian secara real-time dalam satu platform terpadu.
+                        </p>
+                    </div>
                 </div>
-                <div>
-                    <label class="block font-semibold text-slate-700 mb-1">Waktu Perahan</label>
-                    <select id="milkSession" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-emerald-600">
-                        <option value="Perahan Pagi">Perahan Pagi</option>
-                        <option value="Perahan Sore">Perahan Sore</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block font-semibold text-slate-700 mb-1">Volume Susu (Liter)</label>
-                    <input type="number" step="0.1" id="milkVolume" placeholder="Contoh: 12.5" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-emerald-600">
-                </div>
-                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-xl shadow-md transition mt-2">
-                    Simpan Catatan Susu
-                </button>
-            </form>
-        </div>
-    </div>
 
-    <!-- MODAL 3: TAMBAH SAPI BARU -->
-    <div id="cowModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-2xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                    <i class="fa-solid fa-cow text-emerald-600"></i> Tambah Data Sapi Baru
-                </h3>
-                <button onclick="closeModal('cowModal')" class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <form id="cowForm" onsubmit="handleCowSubmit(event)" class="space-y-3 text-xs">
-                <div>
-                    <label class="block font-semibold text-slate-700 mb-1">Nomor Tag / ID Sapi</label>
-                    <input type="text" id="newTag" placeholder="Contoh: #011" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-emerald-600">
-                </div>
-                <div>
-                    <label class="block font-semibold text-slate-700 mb-1">Nama Panggilan Sapi</label>
-                    <input type="text" id="newName" placeholder="Contoh: Melati" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-emerald-600">
-                </div>
-                <div>
-                    <label class="block font-semibold text-slate-700 mb-1">Bangsa / Breed</label>
-                    <input type="text" id="newBreed" placeholder="Contoh: Holstein / Simmental" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-emerald-600">
-                </div>
-                <div>
-                    <label class="block font-semibold text-slate-700 mb-1">Laktasi ke-</label>
-                    <input type="number" id="newLactation" placeholder="Contoh: 2" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-emerald-600">
-                </div>
-                <div>
-                    <label class="block font-semibold text-slate-700 mb-1">Status Sapi</label>
-                    <select id="newStatus" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-emerald-600">
-                        <option value="Aktif / Sehat">Aktif / Sehat</option>
-                        <option value="Bunting">Bunting</option>
-                        <option value="Perlu IB">Perlu IB</option>
-                        <option value="Overdue">Overdue</option>
-                    </select>
-                </div>
-                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md transition mt-2">
-                    Simpan Sapi ke Database
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 4: DETAIL SAPI & RIWAYAT EVENT -->
-    <div id="detailModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-2xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl max-h-[85vh] overflow-y-auto">
-            <div class="flex items-center justify-between mb-4 border-b pb-2">
-                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                    <i class="fa-solid fa-file-lines text-emerald-600"></i> Kartu & Riwayat Sapi
-                </h3>
-                <button onclick="closeModal('detailModal')" class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            
-            <div id="detailContent" class="space-y-4 text-xs">
-                <div class="text-center text-slate-400 py-4">Memuat data...</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- JavaScript Logic & Supabase Integration -->
-    <script>
-        const SUPABASE_URL = 'https://wtczihvxhboacthsgbyp.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0Y3ppaHZ4aGJvYWN0aHNnYnlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3Mzk3NDgsImV4cCI6MjEwODMxNTc0OH0.Xc1Wu9M8vho6m2V-Ir0jnZf5DDcCBsuBRYSE_leprLo';
-        
-        const { createClient } = supabase;
-        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        let allCowsData = [];
-        let milkChartInstance = null;
-
-        window.addEventListener('DOMContentLoaded', () => {
-            loadDashboardData();
-        });
-
-        // --- MEMUAT DATA DASHBOARD DINAMIS ---
-        async function loadDashboardData() {
-            // 1. Total Sapi
-            const { count, error: countErr } = await _supabase.from('cows').select('*', { count: 'exact', head: true });
-            if (!countErr && count !== null) {
-                document.getElementById('total-cows-count').innerText = count;
-            }
-
-            // 2. Total Produksi Susu Hari Ini
-            const todayStr = new Date().toISOString().split('T')[0];
-            const { data: milkEvents, error: milkErr } = await _supabase
-                .from('events')
-                .select('notes')
-                .eq('event_type', 'Pencatatan Susu Harian')
-                .gte('created_at', todayStr);
-
-            if (!milkErr && milkEvents) {
-                let totalMilk = 0;
-                milkEvents.forEach(ev => {
-                    const match = ev.notes ? ev.notes.match(/([\d.]+)\s*Liter/) : null;
-                    if (match) {
-                        totalMilk += parseFloat(match[1]);
-                    }
-                });
-                document.getElementById('today-milk-total').innerText = totalMilk.toFixed(1);
-            }
-
-            // 3. 5 Aktivitas Event Terakhir
-            const { data: events, error: evErr } = await _supabase
-                .from('events')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(5);
-
-            const activitiesContainer = document.getElementById('recent-activities-list');
-
-            if (evErr) {
-                activitiesContainer.innerHTML = `<p class="text-rose-500 text-center text-xs">Gagal memuat aktivitas: ${evErr.message}</p>`;
-                return;
-            }
-
-            if (!events || events.length === 0) {
-                activitiesContainer.innerHTML = `<div class="p-3 bg-slate-50 border rounded-lg text-center text-slate-400 text-xs">Belum ada aktivitas rekam event.</div>`;
-                return;
-            }
-
-            let html = '';
-            events.forEach(ev => {
-                const dateStr = ev.created_at ? new Date(ev.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : '';
-                const isMilk = ev.event_type === 'Pencatatan Susu Harian';
-                html += `
-                    <div class="flex items-center justify-between pb-2 border-b border-slate-100 last:border-0 last:pb-0">
-                        <div class="flex items-center gap-2.5">
-                            <span class="w-7 h-7 rounded-lg ${isMilk ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'} flex items-center justify-center font-bold text-[10px] border">
-                                <i class="fa-solid ${isMilk ? 'fa-glass-water' : 'fa-file-medical'}"></i>
-                            </span>
-                            <div>
-                                <span class="font-bold text-slate-800 text-xs">Sapi ${ev.tag_number}</span>
-                                <p class="text-[10px] text-slate-500 font-medium">${ev.event_type} - ${ev.notes || ''}</p>
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-slate-500">Total Sapi Anda</span>
+                            <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-cow"></i>
                             </div>
                         </div>
-                        <span class="text-[9px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded">${dateStr}</span>
-                    </div>
-                `;
-            });
-            activitiesContainer.innerHTML = html;
-        }
-
-        // --- AMBIL DATA SAPI DARI SUPABASE ---
-        async function loadCowsFromDatabase() {
-            const { data, error } = await _supabase.from('cows').select('*');
-            const container = document.getElementById('supabase-cows-list');
-            
-            if (error) {
-                container.innerHTML = `<div class="p-4 bg-rose-50 text-rose-600 rounded-xl text-xs">Gagal memuat data: ${error.message}</div>`;
-                return;
-            }
-
-            if (!data || data.length === 0) {
-                container.innerHTML = `<div class="p-4 bg-white border border-slate-200 rounded-xl text-center text-xs text-slate-500">Belum ada data sapi di database. Silakan klik "Tambah Sapi" di atas.</div>`;
-                return;
-            }
-
-            allCowsData = data;
-            renderCowsList(data);
-        }
-
-        function renderCowsList(cows) {
-            const container = document.getElementById('supabase-cows-list');
-            if (cows.length === 0) {
-                container.innerHTML = `<div class="p-4 bg-white border border-slate-200 rounded-xl text-center text-xs text-slate-500">Tidak ada sapi yang cocok dengan pencarian.</div>`;
-                return;
-            }
-
-            let html = '';
-            cows.forEach(cow => {
-                html += `
-                <div class="bg-white p-3.5 rounded-xl border border-slate-200/80 flex items-center justify-between shadow-xs">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 font-bold flex items-center justify-center text-sm border border-emerald-100">
-                            ${cow.tag_number}
+                        <div class="flex items-baseline gap-2">
+                            <span id="total-cows-count" class="text-2xl font-bold text-slate-900">0</span>
+                            <span class="text-[11px] text-emerald-600 font-semibold">Ekor</span>
                         </div>
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <h4 class="font-bold text-xs text-slate-900">${cow.cow_name || 'Tanpa Nama'}</h4>
-                                <span class="text-[9px] bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded font-semibold">${cow.status || 'Aktif'}</span>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-slate-500">Produksi Hari Ini</span>
+                            <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-glass-water"></i>
                             </div>
-                            <p class="text-[10px] text-slate-500 mt-0.5">${cow.breed || 'Ras -'} • Laktasi ke-${cow.lactation || 0}</p>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span id="today-milk-total" class="text-2xl font-bold text-slate-900">0</span>
+                            <span class="text-xs text-slate-500">Liter</span>
+                        </div>
+                        <div class="text-[10px] text-emerald-600 font-semibold mt-1">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Real-time Log
                         </div>
                     </div>
-                    <button onclick="openCowDetail('${cow.tag_number}', '${cow.cow_name || '-'}', '${cow.breed || '-'}', ${cow.lactation || 0}, '${cow.status || '-'}')" class="text-xs text-slate-600 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg font-medium">Detail</button>
-                </div>`;
-            });
-            container.innerHTML = html;
-        }
-
-        function filterCows() {
-            const query = document.getElementById('cowSearchInput').value.toLowerCase();
-            const filtered = allCowsData.filter(cow => 
-                cow.tag_number.toLowerCase().includes(query) || 
-                (cow.cow_name && cow.cow_name.toLowerCase().includes(query))
-            );
-            renderCowsList(filtered);
-        }
-
-        // --- BUKA HALAMAN DETAIL SAPI ---
-        async function openCowDetail(tagNumber, name, breed, lactation, status) {
-            openModal('detailModal');
-            const container = document.getElementById('detailContent');
-            
-            container.innerHTML = `
-                <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-100">
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="font-bold text-emerald-800 text-sm">Tag: ${tagNumber}</span>
-                        <span class="bg-emerald-600 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">${status}</span>
-                    </div>
-                    <h4 class="font-bold text-slate-900 text-base">${name}</h4>
-                    <p class="text-slate-600 text-[11px] mt-0.5">Bangsa: ${breed} | Laktasi: ${lactation}</p>
                 </div>
 
-                <div>
-                    <h4 class="font-bold text-slate-800 mb-2">Riwayat Event / Catatan Sapi Ini:</h4>
-                    <div id="cowEventsList" class="space-y-2">
-                        <p class="text-slate-400 text-center py-2">Memuat riwayat event...</p>
+                <!-- Aktivitas Terbaru Dinamis -->
+                <div class="bg-white rounded-xl border border-slate-200/80 shadow-xs p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-sm text-slate-900">Aktivitas Kandang Terakhir</h3>
+                        <span class="text-[10px] bg-emerald-50 text-emerald-600 font-bold px-2 py-0.5 rounded-full">Kandang Saya</span>
+                    </div>
+                    <div id="recent-activities-list" class="space-y-2.5 text-xs">
+                        <div class="text-center text-slate-400 py-3">Memuat aktivitas...</div>
                     </div>
                 </div>
-            `;
+            </div>
 
-            const { data: events, error } = await _supabase
-                .from('events')
-                .select('*')
-                .eq('tag_number', tagNumber)
-                .order('created_at', { ascending: false });
+            <!-- TAB 2: KARTU SAPI (LIST) -->
+            <div id="content-cows" class="hidden space-y-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-sm text-slate-900">Daftar Sapi Ternak Saya</h3>
+                    <button onclick="openModal('cowModal')" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1 transition">
+                        <i class="fa-solid fa-plus"></i> Tambah Sapi
+                    </button>
+                </div>
 
-            const eventsContainer = document.getElementById('cowEventsList');
-
-            if (error) {
-                eventsContainer.innerHTML = `<p class="text-rose-500 text-xs">Gagal memuat riwayat: ${error.message}</p>`;
-                return;
-            }
-
-            if (!events || events.length === 0) {
-                eventsContainer.innerHTML = `<div class="p-3 bg-slate-50 border rounded-lg text-center text-slate-400 text-[11px]">Belum ada catatan event untuk sapi ini.</div>`;
-                return;
-            }
-
-            let eventsHtml = '';
-            events.forEach(ev => {
-                eventsHtml += `
-                    <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg flex justify-between items-start">
-                        <div>
-                            <span class="font-bold text-emerald-700 text-[11px]">${ev.event_type}</span>
-                            <p class="text-slate-600 text-[11px] mt-0.5">${ev.notes || 'Tanpa catatan'}</p>
-                        </div>
-                        <span class="text-[9px] text-slate-400">${ev.created_at ? new Date(ev.created_at).toLocaleDateString('id-ID') : ''}</span>
-                    </div>
-                `;
-            });
-            eventsContainer.innerHTML = eventsHtml;
-        }
-
-        // --- SIMPAN CATATAN SUSU DARI FORM ---
-        async function handleMilkSubmit(event) {
-            event.preventDefault();
-            const tag_number = document.getElementById('milkTagNumber').value;
-            const session = document.getElementById('milkSession').value;
-            const volume = parseFloat(document.getElementById('milkVolume').value) || 0;
-
-            const notes = `${session}: ${volume} Liter`;
-
-            const { error } = await _supabase
-                .from('events')
-                .insert([{ event_type: 'Pencatatan Susu Harian', tag_number, notes }]);
-
-            if (error) {
-                alert('Gagal mencatat produksi susu: ' + error.message);
-            } else {
-                alert('Pencatatan susu berhasil disimpan!');
-                document.getElementById('milkForm').reset();
-                closeModal('milkModal');
-                loadDashboardData();
-            }
-        }
-
-        // --- SIMPAN SAPI BARU ---
-        async function handleCowSubmit(event) {
-            event.preventDefault();
-            const tag_number = document.getElementById('newTag').value;
-            const cow_name = document.getElementById('newName').value;
-            const breed = document.getElementById('newBreed').value;
-            const lactation = parseInt(document.getElementById('newLactation').value) || 0;
-            const status = document.getElementById('newStatus').value;
-
-            const { error } = await _supabase
-                .from('cows')
-                .insert([{ tag_number, cow_name, breed, lactation, status }]);
-
-            if (error) {
-                alert('Gagal menyimpan data sapi: ' + error.message);
-            } else {
-                alert('Sapi baru berhasil disimpan ke database cloud!');
-                document.getElementById('cowForm').reset();
-                closeModal('cowModal');
-                loadCowsFromDatabase();
-                loadDashboardData();
-            }
-        }
-
-        // --- SIMPAN EVENT KE DATABASE ---
-        async function handleEventSubmit(event) {
-            event.preventDefault();
-            const event_type = document.getElementById('eventType').value;
-            const tag_number = document.getElementById('tagNumber').value;
-            const notes = document.getElementById('eventNotes').value;
-
-            const { error } = await _supabase
-                .from('events')
-                .insert([{ event_type, tag_number, notes }]);
-
-            if (error) {
-                alert('Gagal merekam event: ' + error.message);
-            } else {
-                alert('Event berhasil disimpan ke database cloud!');
-                document.getElementById('eventForm').reset();
-                closeModal('eventModal');
-                loadDashboardData();
-            }
-        }
-
-        // --- NAVIGASI TAB & MODAL ---
-        function switchTab(tabName) {
-            document.getElementById('content-dashboard').classList.add('hidden');
-            document.getElementById('content-cows').classList.add('hidden');
-            document.getElementById('content-analytics').classList.add('hidden');
-
-            document.getElementById('tab-dashboard').className = "flex-1 py-3 text-center text-xs font-semibold text-slate-500 border-b-2 border-transparent transition flex items-center justify-center gap-1.5";
-            document.getElementById('tab-cows').className = "flex-1 py-3 text-center text-xs font-semibold text-slate-500 border-b-2 border-transparent transition flex items-center justify-center gap-1.5";
-            document.getElementById('tab-analytics').className = "flex-1 py-3 text-center text-xs font-semibold text-slate-500 border-b-2 border-transparent transition flex items-center justify-center gap-1.5";
-
-            document.getElementById('nav-dashboard').className = "flex flex-col items-center text-slate-400 gap-1 text-[11px] font-medium";
-            document.getElementById('nav-cows').className = "flex flex-col items-center text-slate-400 gap-1 text-[11px] font-medium";
-            document.getElementById('nav-analytics').className = "flex flex-col items-center text-slate-400 gap-1 text-[11px] font-medium";
-
-            document.getElementById('content-' + tabName).classList.remove('hidden');
-            document.getElementById('tab-' + tabName).className = "flex-1 py-3 text-center text-xs font-bold text-emerald-600 border-b-2 border-emerald-600 transition flex items-center justify-center gap-1.5";
-            document.getElementById('nav-' + tabName).className = "flex flex-col items-center text-emerald-600 gap-1 text-[11px] font-bold";
-
-            if (tabName === 'dashboard') {
-                loadDashboardData();
-            }
-            if (tabName === 'cows') {
-                loadCowsFromDatabase();
-            }
-            if (tabName === 'analytics') {
-                renderChartFromDatabase();
-            }
-        }
-
-        function openModal(id) {
-            document.getElementById(id).classList.remove('hidden');
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
-
-        // --- RENDER GRAFIK ANALITIK DENGAN DATA REAL SUPABASE ---
-        async function renderChartFromDatabase() {
-            // Ambil data 7 hari terakhir
-            const labels = [];
-            const milkTotals = [0, 0, 0, 0, 0, 0, 0];
-            const today = new Date();
-
-            for (let i = 6; i >= 0; i--) {
-                const d = new Date(today);
-                d.setDate(today.getDate() - i);
-                labels.push(d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' }));
-            }
-
-            const sevenDaysAgo = new Date();
-            sevenDaysAgo.setDate(today.getDate() - 6);
-            sevenDaysAgo.setHours(0, 0, 0, 0);
-
-            const { data: events, error } = await _supabase
-                .from('events')
-                .select('created_at, notes')
-                .eq('event_type', 'Pencatatan Susu Harian')
-                .gte('created_at', sevenDaysAgo.toISOString());
-
-            if (!error && events) {
-                events.forEach(ev => {
-                    const evDate = new Date(ev.created_at);
-                    const diffTime = Math.floor((evDate - sevenDaysAgo) / (1000 * 60 * 60 * 24));
-                    if (diffTime >= 0 && diffTime < 7) {
-                        const match = ev.notes ? ev.notes.match(/([\d.]+)\s*Liter/) : null;
-                        if (match) {
-                            milkTotals[diffTime] += parseFloat(match[1]);
-                        }
-                    }
-                });
-            }
-
-            const ctx = document.getElementById('milkChart').getContext('2d');
-            if (milkChartInstance) {
-                milkChartInstance.destroy(); // Hancurkan chart lama sebelum buat baru
-            }
-
-            milkChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Produksi Susu (Liter)',
-                        data: milkTotals,
-                        borderColor: '#f59e0b',
-                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.3,
-                        pointRadius: 4,
-                        pointBackgroundColor: '#f59e0b'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-        }
-    </script>
-</body>
-</html>
+                <!-- Search box -->
+                <div class="relative">
+                    <i class="fa-solid fa-search absolute left-3 top-3 text-slate-400 text-xs"></i>
+                    <input type="text" id="cowSearchInput" oninput="filterCows()" placeholder="Cari nomor tag atau nama sapi..." class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2 text
