@@ -10,11 +10,17 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- SheetJS (XLSX Export) CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; color: black !important; }
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
@@ -53,10 +59,10 @@
         </div>
     </div>
 
-    <!-- MAIN APP SCREEN (Hanya tampil saat sudah login) -->
+    <!-- MAIN APP SCREEN -->
     <div id="appScreen" class="hidden min-h-screen flex flex-col">
         <!-- Top Navigation -->
-        <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+        <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs no-print">
             <div class="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-600/20">
@@ -69,7 +75,7 @@
                 </div>
                 <div class="flex items-center gap-1.5">
                     <button onclick="openModal('milkModal')" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold px-2.5 py-2 rounded-lg flex items-center gap-1 transition shadow-sm">
-                        <i class="fa-solid fa-glass-water"></i> Catat Susu
+                        <i class="fa-solid fa-glass-water"></i> Susu
                     </button>
                     <button onclick="openModal('eventModal')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-2.5 py-2 rounded-lg flex items-center gap-1 transition shadow-sm">
                         <i class="fa-solid fa-plus"></i> Event
@@ -82,16 +88,19 @@
         </header>
 
         <!-- Navigation Tabs -->
-        <nav class="bg-white border-b border-slate-200 sticky top-[61px] z-20">
+        <nav class="bg-white border-b border-slate-200 sticky top-[61px] z-20 no-print">
             <div class="max-w-md mx-auto px-4 flex justify-around">
                 <button onclick="switchTab('dashboard')" id="tab-dashboard" class="flex-1 py-3 text-center text-xs font-bold text-emerald-600 border-b-2 border-emerald-600 transition flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-chart-pie"></i> Dashboard
                 </button>
                 <button onclick="switchTab('cows')" id="tab-cows" class="flex-1 py-3 text-center text-xs font-semibold text-slate-500 border-b-2 border-transparent transition flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-list"></i> Kartu Sapi
+                    <i class="fa-solid fa-list"></i> Sapi
                 </button>
                 <button onclick="switchTab('analytics')" id="tab-analytics" class="flex-1 py-3 text-center text-xs font-semibold text-slate-500 border-b-2 border-transparent transition flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-chart-line"></i> Analitik
+                </button>
+                <button onclick="switchTab('reports')" id="tab-reports" class="flex-1 py-3 text-center text-xs font-semibold text-slate-500 border-b-2 border-transparent transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-file-export"></i> Laporan
                 </button>
             </div>
         </nav>
@@ -114,7 +123,7 @@
                             Peternakan Anda, lebih cerdas dengan SapiKu.
                         </h2>
                         <p class="text-xs text-slate-300 leading-relaxed">
-                            Pantau reproduksi, kesehatan, dan statistik produksi susu harian secara real-time dalam satu platform terpadu.
+                            Pantau reproduksi, jadwal melahirkan, dan statistik produksi susu harian secara real-time.
                         </p>
                     </div>
                 </div>
@@ -148,6 +157,19 @@
                         <div class="text-[10px] text-emerald-600 font-semibold mt-1">
                             <i class="fa-solid fa-cloud-arrow-up"></i> Real-time Log
                         </div>
+                    </div>
+                </div>
+
+                <!-- Peringatan Reproduksi Otomatis (Calving & Dry-Off) -->
+                <div class="bg-white rounded-xl border border-slate-200/80 shadow-xs p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-sm text-slate-900 flex items-center gap-1.5">
+                            <i class="fa-solid fa-bell text-amber-500"></i> Peringatan Reproduksi
+                        </h3>
+                        <span class="text-[10px] bg-amber-50 text-amber-600 font-bold px-2 py-0.5 rounded-full">Kalkulator Gestasi</span>
+                    </div>
+                    <div id="repro-alerts-list" class="space-y-2 text-xs">
+                        <div class="text-center text-slate-400 py-3">Menghitung data gestasi sapi...</div>
                     </div>
                 </div>
 
@@ -200,16 +222,51 @@
                 </div>
             </div>
 
+            <!-- TAB 4: LAPORAN & EKSPOR -->
+            <div id="content-reports" class="hidden space-y-4">
+                <h3 class="font-bold text-sm text-slate-900">Ekspor Data & Laporan Peternakan</h3>
+                
+                <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs space-y-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">
+                            <i class="fa-file-excel"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-xs text-slate-900">Ekspor File Excel (.xlsx)</h4>
+                            <p class="text-[11px] text-slate-500">Unduh data rekap sapi, event medis, & perahan susu ke Excel.</p>
+                        </div>
+                    </div>
+                    <button onclick="exportToExcel()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2.5 rounded-xl shadow-xs transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-download"></i> Unduh Rekap Excel
+                    </button>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs space-y-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg">
+                            <i class="fa-file-pdf"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-xs text-slate-900">Cetak Laporan / Simpan PDF</h4>
+                            <p class="text-[11px] text-slate-500">Cetak ringkasan laporan peternakan resmi ke format PDF.</p>
+                        </div>
+                    </div>
+                    <button onclick="window.print()" class="w-full bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold py-2.5 rounded-xl shadow-xs transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-print"></i> Cetak / Simpan PDF
+                    </button>
+                </div>
+            </div>
+
         </main>
 
         <!-- Bottom Navigation Bar -->
-        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-30 shadow-lg">
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-30 shadow-lg no-print">
             <div class="max-w-md mx-auto px-4 py-2 flex justify-around">
                 <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex flex-col items-center text-emerald-600 gap-1 text-[11px] font-bold">
                     <i class="fa-solid fa-house text-base"></i> Dashboard
                 </button>
                 <button onclick="switchTab('cows')" id="nav-cows" class="flex flex-col items-center text-slate-400 gap-1 text-[11px] font-medium">
-                    <i class="fa-solid fa-cow text-base"></i> Kartu Sapi
+                    <i class="fa-solid fa-cow text-base"></i> Sapi
                 </button>
                 <button onclick="openModal('eventModal')" class="flex flex-col items-center text-white -mt-5">
                     <div class="w-12 h-12 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-lg shadow-emerald-600/30 border-4 border-white">
@@ -219,8 +276,8 @@
                 <button onclick="switchTab('analytics')" id="nav-analytics" class="flex flex-col items-center text-slate-400 gap-1 text-[11px] font-medium">
                     <i class="fa-solid fa-chart-line text-base"></i> Analitik
                 </button>
-                <button onclick="alert('Pengaturan Akun Peternakan')" class="flex flex-col items-center text-slate-400 gap-1 text-[11px] font-medium">
-                    <i class="fa-solid fa-user-gear text-base"></i> Profil
+                <button onclick="switchTab('reports')" id="nav-reports" class="flex flex-col items-center text-slate-400 gap-1 text-[11px] font-medium">
+                    <i class="fa-solid fa-file-export text-base"></i> Laporan
                 </button>
             </div>
         </div>
@@ -228,7 +285,7 @@
 
     <!-- MODALS -->
     <!-- MODAL 1: REKAM EVENT -->
-    <div id="eventModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-2xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div id="eventModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-2xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 no-print">
         <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
@@ -253,6 +310,10 @@
                     <input type="text" id="tagNumber" placeholder="Contoh: #011" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-emerald-600">
                 </div>
                 <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Tanggal Event</label>
+                    <input type="date" id="eventDate" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-emerald-600">
+                </div>
+                <div>
                     <label class="block font-semibold text-slate-700 mb-1">Keterangan / Hasil Catatan</label>
                     <textarea id="eventNotes" rows="3" placeholder="Masukkan detail catatan..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-emerald-600"></textarea>
                 </div>
@@ -264,7 +325,7 @@
     </div>
 
     <!-- MODAL 2: CATAT PRODUKSI SUSU -->
-    <div id="milkModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-2xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div id="milkModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-2xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 no-print">
         <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
@@ -298,7 +359,7 @@
     </div>
 
     <!-- MODAL 3: TAMBAH SAPI BARU -->
-    <div id="cowModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-2xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div id="cowModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-2xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 no-print">
         <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
@@ -331,7 +392,7 @@
                         <option value="Aktif / Sehat">Aktif / Sehat</option>
                         <option value="Bunting">Bunting</option>
                         <option value="Perlu IB">Perlu IB</option>
-                        <option value="Overdue">Overdue</option>
+                        <option value="Kering Kandang">Kering Kandang</option>
                     </select>
                 </div>
                 <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md transition mt-2">
@@ -342,7 +403,7 @@
     </div>
 
     <!-- MODAL 4: DETAIL SAPI & RIWAYAT EVENT -->
-    <div id="detailModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-2xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div id="detailModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-2xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 no-print">
         <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl max-h-[85vh] overflow-y-auto">
             <div class="flex items-center justify-between mb-4 border-b pb-2">
                 <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
@@ -359,7 +420,7 @@
         </div>
     </div>
 
-    <!-- JavaScript Logic & Supabase Auth -->
+    <!-- JavaScript Logic & Supabase Integration -->
     <script>
         const SUPABASE_URL = 'https://wtczihvxhboacthsgbyp.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0Y3ppaHZ4aGJvYWN0aHNnYnlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3Mzk3NDgsImV4cCI6MjEwODMxNTc0OH0.Xc1Wu9M8vho6m2V-Ir0jnZf5DDcCBsuBRYSE_leprLo';
@@ -371,6 +432,9 @@
         let currentUser = null;
         let allCowsData = [];
         let milkChartInstance = null;
+
+        // Set tanggal default form event ke hari ini
+        document.getElementById('eventDate').value = new Date().toISOString().split('T')[0];
 
         // --- CEK SESI USER SAAT HALAMAN DIMUAT ---
         window.addEventListener('DOMContentLoaded', async () => {
@@ -408,7 +472,7 @@
                 if (error) {
                     alert("Gagal mendaftar: " + error.message);
                 } else {
-                    alert("Pendaftaran berhasil! Jika verifikasi email diaktifkan, silakan periksa inbox Anda, atau langsung coba login.");
+                    alert("Pendaftaran berhasil! Silakan periksa inbox email Anda untuk klik link verifikasi.");
                     toggleAuthMode();
                 }
             } else {
@@ -442,7 +506,7 @@
             loadDashboardData();
         }
 
-        // --- MEMUAT DATA DASHBOARD DINAMIS ---
+        // --- MEMUAT DATA DASHBOARD & REPRODUKSI ---
         async function loadDashboardData() {
             const { count, error: countErr } = await _supabase.from('cows').select('*', { count: 'exact', head: true });
             if (!countErr && count !== null) {
@@ -460,13 +524,15 @@
                 let totalMilk = 0;
                 milkEvents.forEach(ev => {
                     const match = ev.notes ? ev.notes.match(/([\d.]+)\s*Liter/) : null;
-                    if (match) {
-                        totalMilk += parseFloat(match[1]);
-                    }
+                    if (match) totalMilk += parseFloat(match[1]);
                 });
                 document.getElementById('today-milk-total').innerText = totalMilk.toFixed(1);
             }
 
+            // Hitung Peringatan Reproduksi Otomatis (IB -> Dry Off & Calving)
+            loadReproAlerts();
+
+            // 5 Aktivitas Terakhir
             const { data: events, error: evErr } = await _supabase
                 .from('events')
                 .select('*')
@@ -474,7 +540,6 @@
                 .limit(5);
 
             const activitiesContainer = document.getElementById('recent-activities-list');
-
             if (evErr) {
                 activitiesContainer.innerHTML = `<p class="text-rose-500 text-center text-xs">Gagal memuat aktivitas: ${evErr.message}</p>`;
                 return;
@@ -505,6 +570,76 @@
                 `;
             });
             activitiesContainer.innerHTML = html;
+        }
+
+        // --- KALKULATOR REPRODUKSI (CALVING & DRY-OFF CALCULATOR) ---
+        async function loadReproAlerts() {
+            const container = document.getElementById('repro-alerts-list');
+            
+            // Ambil semua event IB terakhir per sapi
+            const { data: ibEvents, error } = await _supabase
+                .from('events')
+                .select('*')
+                .eq('event_type', 'Inseminasi Buatan (IB)')
+                .order('created_at', { ascending: false });
+
+            if (error || !ibEvents || ibEvents.length === 0) {
+                container.innerHTML = `<div class="p-3 bg-slate-50 border rounded-lg text-center text-slate-400 text-xs">Belum ada catatan IB untuk kalkulasi gestasi.</div>`;
+                return;
+            }
+
+            // Ambil data IB unik terbaru per sapi
+            const latestIBByTag = {};
+            ibEvents.forEach(ev => {
+                if (!latestIBByTag[ev.tag_number]) {
+                    latestIBByTag[ev.tag_number] = ev;
+                }
+            });
+
+            let alertsHtml = '';
+            const today = new Date();
+
+            Object.keys(latestIBByTag).forEach(tag => {
+                const ev = latestIBByTag[tag];
+                const ibDate = new Date(ev.created_at);
+
+                // Estimasi Melahirkan (+280 hari) & Kering Kandang (+220 hari)
+                const calvingDate = new Date(ibDate);
+                calvingDate.setDate(ibDate.getDate() + 280);
+
+                const dryOffDate = new Date(ibDate);
+                dryOffDate.setDate(ibDate.getDate() + 220);
+
+                const daysFromIB = Math.floor((today - ibDate) / (1000 * 60 * 60 * 24));
+                const daysToCalving = Math.floor((calvingDate - today) / (1000 * 60 * 60 * 24));
+                const daysToDryOff = Math.floor((dryOffDate - today) / (1000 * 60 * 60 * 24));
+
+                let statusBadge = '';
+                if (daysToCalving < 0) {
+                    statusBadge = `<span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold text-[10px]">Lewat Est. Melahirkan</span>`;
+                } else if (daysToCalving <= 30) {
+                    statusBadge = `<span class="bg-rose-100 text-rose-700 px-2 py-0.5 rounded font-bold text-[10px]">⚠️ Siap Melahirkan (${daysToCalving} hari lagi)</span>`;
+                } else if (daysToDryOff <= 14 && daysToDryOff >= -30) {
+                    statusBadge = `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold text-[10px]">🥛 Waktunya Kering Kandang</span>`;
+                } else {
+                    statusBadge = `<span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-bold text-[10px]">Bunting (~${daysFromIB} Hari)</span>`;
+                }
+
+                alertsHtml += `
+                    <div class="p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-slate-900">Sapi ${tag}</span>
+                            ${statusBadge}
+                        </div>
+                        <div class="grid grid-cols-2 text-[10px] text-slate-500 pt-1">
+                            <div>🥛 Dry-Off: <b class="text-slate-700">${dryOffDate.toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'})}</b></div>
+                            <div>🐮 Melahirkan: <b class="text-slate-700">${calvingDate.toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'})}</b></div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = alertsHtml || `<div class="p-3 bg-slate-50 border rounded-lg text-center text-slate-400 text-xs">Belum ada peringatan reproduksi.</div>`;
         }
 
         // --- AMBIL DATA SAPI DARI SUPABASE ---
@@ -564,11 +699,39 @@
             renderCowsList(filtered);
         }
 
-        // --- BUKA HALAMAN DETAIL SAPI ---
+        // --- BUKA DETAIL SAPI & ESTIMASI MELAHIRKAN PER SAPI ---
         async function openCowDetail(tagNumber, name, breed, lactation, status) {
             openModal('detailModal');
             const container = document.getElementById('detailContent');
             
+            // Cari data IB terakhir khusus sapi ini
+            const { data: ibEvent } = await _supabase
+                .from('events')
+                .select('*')
+                .eq('tag_number', tagNumber)
+                .eq('event_type', 'Inseminasi Buatan (IB)')
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            let reproCalcHtml = '';
+            if (ibEvent && ibEvent.length > 0) {
+                const ibDate = new Date(ibEvent[0].created_at);
+                const calvingDate = new Date(ibDate);
+                calvingDate.setDate(ibDate.getDate() + 280);
+                const dryOffDate = new Date(ibDate);
+                dryOffDate.setDate(ibDate.getDate() + 220);
+
+                reproCalcHtml = `
+                    <div class="bg-amber-50 border border-amber-200 p-2.5 rounded-xl space-y-1 my-2">
+                        <span class="font-bold text-amber-900 text-[11px]"><i class="fa-solid fa-calculator"></i> Estimasi Gestasi (IB: ${ibDate.toLocaleDateString('id-ID')})</span>
+                        <div class="grid grid-cols-2 text-[10px] text-amber-800 pt-0.5">
+                            <div>🥛 Dry-off: <b>${dryOffDate.toLocaleDateString('id-ID')}</b></div>
+                            <div>🐮 Melahirkan: <b>${calvingDate.toLocaleDateString('id-ID')}</b></div>
+                        </div>
+                    </div>
+                `;
+            }
+
             container.innerHTML = `
                 <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-100">
                     <div class="flex justify-between items-center mb-1">
@@ -578,6 +741,8 @@
                     <h4 class="font-bold text-slate-900 text-base">${name}</h4>
                     <p class="text-slate-600 text-[11px] mt-0.5">Bangsa: ${breed} | Laktasi: ${lactation}</p>
                 </div>
+
+                ${reproCalcHtml}
 
                 <div>
                     <h4 class="font-bold text-slate-800 mb-2">Riwayat Event Sapi Ini:</h4>
@@ -594,7 +759,6 @@
                 .order('created_at', { ascending: false });
 
             const eventsContainer = document.getElementById('cowEventsList');
-
             if (error) {
                 eventsContainer.innerHTML = `<p class="text-rose-500 text-xs">Gagal memuat: ${error.message}</p>`;
                 return;
@@ -620,7 +784,7 @@
             eventsContainer.innerHTML = eventsHtml;
         }
 
-        // --- INPUT HANDLERS (DENGAN user_id) ---
+        // --- INPUT HANDLERS ---
         async function handleMilkSubmit(event) {
             event.preventDefault();
             const tag_number = document.getElementById('milkTagNumber').value;
@@ -670,11 +834,15 @@
             event.preventDefault();
             const event_type = document.getElementById('eventType').value;
             const tag_number = document.getElementById('tagNumber').value;
+            const customDate = document.getElementById('eventDate').value;
             const notes = document.getElementById('eventNotes').value;
 
-            const { error } = await _supabase
-                .from('events')
-                .insert([{ event_type, tag_number, notes, user_id: currentUser.id }]);
+            const insertPayload = { event_type, tag_number, notes, user_id: currentUser.id };
+            if (customDate) {
+                insertPayload.created_at = new Date(customDate).toISOString();
+            }
+
+            const { error } = await _supabase.from('events').insert([insertPayload]);
 
             if (error) {
                 alert('Gagal merekam event: ' + error.message);
@@ -686,19 +854,56 @@
             }
         }
 
+        // --- EKSPOR DATA KE EXCEL ---
+        async function exportToExcel() {
+            try {
+                // Ambil data cows & events
+                const { data: cows } = await _supabase.from('cows').select('*');
+                const { data: events } = await _supabase.from('events').select('*').order('created_at', { ascending: false });
+
+                // Format data untuk sheet Excel
+                const cowsSheetData = (cows || []).map(c => ({
+                    'Tag Number': c.tag_number,
+                    'Nama Sapi': c.cow_name || '-',
+                    'Ras/Breed': c.breed || '-',
+                    'Laktasi ke-': c.lactation || 0,
+                    'Status': c.status || 'Aktif',
+                    'Tanggal Dibuat': new Date(c.created_at).toLocaleDateString('id-ID')
+                }));
+
+                const eventsSheetData = (events || []).map(e => ({
+                    'Tag Number': e.tag_number,
+                    'Jenis Event': e.event_type,
+                    'Catatan / Volume': e.notes || '-',
+                    'Tanggal Event': new Date(e.created_at).toLocaleDateString('id-ID')
+                }));
+
+                // Buat Workbook Baru
+                const wb = XLSX.utils.book_new();
+                const wsCows = XLSX.utils.json_to_sheet(cowsSheetData);
+                const wsEvents = XLSX.utils.json_to_sheet(eventsSheetData);
+
+                XLSX.utils.book_append_sheet(wb, wsCows, "Daftar Sapi");
+                XLSX.utils.book_append_sheet(wb, wsEvents, "Riwayat Event & Susu");
+
+                // Download File Excel
+                XLSX.writeFile(wb, `SapiKu_Rekap_Peternakan_${new Date().toISOString().split('T')[0]}.xlsx`);
+            } catch (err) {
+                alert('Gagal mengunduh Excel: ' + err.message);
+            }
+        }
+
         // --- NAVIGASI TAB & MODAL ---
         function switchTab(tabName) {
             document.getElementById('content-dashboard').classList.add('hidden');
             document.getElementById('content-cows').classList.add('hidden');
             document.getElementById('content-analytics').classList.add('hidden');
+            document.getElementById('content-reports').classList.add('hidden');
 
-            document.getElementById('tab-dashboard').className = "flex-1 py-3 text-center text-xs font-semibold text-slate-500 border-b-2 border-transparent transition flex items-center justify-center gap-1.5";
-            document.getElementById('tab-cows').className = "flex-1 py-3 text-center text-xs font-semibold text-slate-500 border-b-2 border-transparent transition flex items-center justify-center gap-1.5";
-            document.getElementById('tab-analytics').className = "flex-1 py-3 text-center text-xs font-semibold text-slate-500 border-b-2 border-transparent transition flex items-center justify-center gap-1.5";
-
-            document.getElementById('nav-dashboard').className = "flex flex-col items-center text-slate-400 gap-1 text-[11px] font-medium";
-            document.getElementById('nav-cows').className = "flex flex-col items-center text-slate-400 gap-1 text-[11px] font-medium";
-            document.getElementById('nav-analytics').className = "flex flex-col items-center text-slate-400 gap-1 text-[11px] font-medium";
+            ['dashboard', 'cows', 'analytics', 'reports'].forEach(t => {
+                document.getElementById('tab-' + t).className = "flex-1 py-3 text-center text-xs font-semibold text-slate-500 border-b-2 border-transparent transition flex items-center justify-center gap-1.5";
+                document.getElementById('nav-' + t).className = "flex flex-col items-center text-slate-400 gap-1 text-[11px] font-medium";
+            });
 
             document.getElementById('content-' + tabName).classList.remove('hidden');
             document.getElementById('tab-' + tabName).className = "flex-1 py-3 text-center text-xs font-bold text-emerald-600 border-b-2 border-emerald-600 transition flex items-center justify-center gap-1.5";
@@ -740,9 +945,7 @@
                     const diffTime = Math.floor((evDate - sevenDaysAgo) / (1000 * 60 * 60 * 24));
                     if (diffTime >= 0 && diffTime < 7) {
                         const match = ev.notes ? ev.notes.match(/([\d.]+)\s*Liter/) : null;
-                        if (match) {
-                            milkTotals[diffTime] += parseFloat(match[1]);
-                        }
+                        if (match) milkTotals[diffTime] += parseFloat(match[1]);
                     }
                 });
             }
