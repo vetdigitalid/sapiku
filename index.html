@@ -253,13 +253,13 @@
                     </div>
                 </div>
 
-                <!-- MODUL PERINGATAN SIKLUS BIRAHI & GESTASI + NOTIFIKASI WA -->
+                <!-- MODUL PERINGATAN SIKLUS BIRAHI & GESTASI (INFO STATUS WA OTOMATIS) -->
                 <div class="bg-white rounded-xl border border-slate-200/80 shadow-xs p-4">
                     <div class="flex items-center justify-between mb-3">
                         <h3 class="font-bold text-sm text-slate-900 flex items-center gap-1.5">
                             <i class="fa-solid fa-bell text-amber-500"></i> Peringatan Birahi & Reproduksi
                         </h3>
-                        <span class="text-[10px] bg-amber-50 text-amber-600 font-bold px-2 py-0.5 rounded-full">Fonnte WA Ready</span>
+                        <span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-full"><i class="fa-brands fa-whatsapp"></i> Fonnte Auto-Reminder</span>
                     </div>
                     <div id="repro-alerts-list" class="space-y-2 text-xs">
                         <div class="text-center text-slate-400 py-3">Menghitung data siklus & gestasi sapi...</div>
@@ -741,7 +741,6 @@
         let isRegisterMode = false;
         let currentUser = null;
         let currentFarmName = 'Farm Sapi Mandiri';
-        let currentUserPhone = '';
         let allCowsData = [];
         let milkChartInstance = null;
         let selectedPackageInfo = '';
@@ -764,17 +763,15 @@
         async function fetchUserProfile(userId) {
             const { data, error } = await _supabase
                 .from('profiles')
-                .select('farm_name, phone, subscription_status, subscription_until')
+                .select('farm_name, subscription_status, subscription_until')
                 .eq('id', userId)
                 .single();
             
             if (!error && data) {
                 currentFarmName = data.farm_name || 'Farm Sapi Mandiri';
-                currentUserPhone = data.phone || '';
                 checkSubscriptionExpiry(currentUser, data);
             } else {
                 currentFarmName = 'Farm Sapi Mandiri';
-                currentUserPhone = '';
                 checkTrialStatus(currentUser, 'trial');
             }
         }
@@ -880,21 +877,6 @@
                             `• Email Terdaftar: ${userEmail}%0A%0A` +
                             `Berikut saya lampirkan bukti transfernya. Mohon bantu verifikasi. Terima kasih!`;
             window.open(`https://wa.me/${phoneAdmin}?text=${message}`, '_blank');
-        }
-
-        // FUNGSI KIRIM NOTIFIKASI WHATSAPP OTOMATIS (FONNTE / DIRECT WA)
-        function sendWhatsAppAlert(messageTitle, messageBody) {
-            if (!currentUserPhone) {
-                alert('Nomor WhatsApp belum terdaftar di profil Anda. Silakan hubungi admin atau perbarui data akun.');
-                return;
-            }
-            const fullMessage = `🔔 *SAPIKU NOTIFIKASI OTOMATIS* (%2A${currentFarmName}%2A)%0A%0A` +
-                                `📌 *${messageTitle}*%0A` +
-                                `${messageBody}%0A%0A` +
-                                `_Pesan dikirim otomatis oleh Sistem SapiKu SaaS._`;
-            
-            // Membuka WhatsApp langsung ke nomor peternak terdaftar
-            window.open(`https://wa.me/${currentUserPhone}?text=${fullMessage}`, '_blank');
         }
 
         function scrollToReports() {
@@ -1165,27 +1147,23 @@
                     const calvingDate = new Date(evDate);
                     calvingDate.setDate(evDate.getDate() + 280);
                     const daysToCalving = Math.floor((calvingDate - today) / (1000 * 60 * 60 * 24));
-                    const calvingDateStr = calvingDate.toLocaleDateString('id-ID');
 
                     let statusBadge = `<span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-bold text-[10px]">Bunting (~${diffDays} Hari)</span>`;
                     if (daysToCalving <= 30 && daysToCalving >= 0) {
                         statusBadge = `<span class="bg-rose-100 text-rose-700 px-2 py-0.5 rounded font-bold text-[10px]">⚠️ Siap Melahirkan (${daysToCalving} hr lagi)</span>`;
                     }
 
-                    const waMsgTitle = `Pengingat Kebuntingan / Kelahiran Sapi Tag: ${earTag}`;
-                    const waMsgBody = `Sapi *${cowName}* (Tag: ${earTag}) berada pada usia kebuntingan hari ke-${diffDays}. Estimasi tanggal melahirkan: *${calvingDateStr}*. Mohon dipersiapkan kandang persiapan dan pakan khusus laktasi.`;
-
                     alertsHtml += `
-                        <div class="p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl space-y-1.5">
+                        <div class="p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl space-y-1">
                             <div class="flex items-center justify-between">
                                 <span class="font-bold text-slate-900">Sapi Tag: ${earTag} (${cowName})</span>
                                 ${statusBadge}
                             </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-[10px] text-slate-500">🐮 Est. Melahirkan: <b class="text-slate-700">${calvingDateStr}</b></span>
-                                <button onclick="sendWhatsAppAlert('${waMsgTitle}', '${waMsgBody}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-2xs">
-                                    <i class="fa-brands fa-whatsapp"></i> Kirim WA
-                                </button>
+                            <div class="flex items-center justify-between pt-1">
+                                <span class="text-[10px] text-slate-500">🐮 Est. Melahirkan: <b class="text-slate-700">${calvingDate.toLocaleDateString('id-ID')}</b></span>
+                                <span class="text-[9px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-semibold">
+                                    <i class="fa-brands fa-whatsapp text-emerald-600"></i> Pengingat WA Aktif
+                                </span>
                             </div>
                         </div>
                     `;
@@ -1207,20 +1185,17 @@
                         estrusBadge = `<span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-bold text-[10px]">Estimasi (${daysToNextMin}-${daysToNextMax} hr lagi)</span>`;
                     }
 
-                    const waMsgTitle = `Peringatan Jendela Birahi (Estrus) Sapi Tag: ${earTag}`;
-                    const waMsgBody = `Sapi *${cowName}* (Tag: ${earTag}) terakhir birahi pada ${ev.record_date}. Rentang estimasi birahi berikutnya adalah *${estrusRangeStr}*. Siapkan inseminator atau amati tanda-tanda birahi hari ini.`;
-
                     alertsHtml += `
-                        <div class="p-2.5 bg-amber-50/40 border border-amber-200/60 rounded-xl space-y-1.5">
+                        <div class="p-2.5 bg-amber-50/40 border border-amber-200/60 rounded-xl space-y-1">
                             <div class="flex items-center justify-between">
                                 <span class="font-bold text-slate-900">Sapi Tag: ${earTag} (${cowName})</span>
                                 ${estrusBadge}
                             </div>
-                            <div class="flex items-center justify-between">
+                            <div class="flex items-center justify-between pt-1">
                                 <span class="text-[10px] text-slate-600">📅 Rentang Siklus: <b>${estrusRangeStr}</b></span>
-                                <button onclick="sendWhatsAppAlert('${waMsgTitle}', '${waMsgBody}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-2xs">
-                                    <i class="fa-brands fa-whatsapp"></i> Kirim WA
-                                </button>
+                                <span class="text-[9px] text-amber-800 bg-amber-100/70 border border-amber-200 px-2 py-0.5 rounded-full font-semibold">
+                                    <i class="fa-brands fa-whatsapp text-amber-600"></i> Pengingat WA Aktif
+                                </span>
                             </div>
                         </div>
                     `;
@@ -1592,11 +1567,11 @@
                 .gte('production_date', sevenDaysAgo.toISOString().split('T')[0]);
 
             if (milkData) {
-                milkData.forEach(sk => {
-                    const mDate = new Date(sk.production_date);
+                milkData.forEach(m => {
+                    const mDate = new Date(m.production_date);
                     const diffTime = Math.floor((mDate - sevenDaysAgo) / (1000 * 60 * 60 * 24));
                     if (diffTime >= 0 && diffTime < 7) {
-                        milkTotals[diffTime] += (parseFloat(sk.morning_yield) || 0) + (parseFloat(sk.evening_yield) || 0);
+                        milkTotals[diffTime] += (parseFloat(m.morning_yield) || 0) + (parseFloat(m.evening_yield) || 0);
                     }
                 });
             }
