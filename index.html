@@ -94,7 +94,7 @@
             </div>
 
             <div class="space-y-3 text-left pt-2">
-                <div class="border border-slate-200 rounded-xl p-3.5 hover:border-emerald-600 transition cursor-pointer bg-slate-50" onclick="payViaWA('Paket Bulanan - Rp 35.000')">
+                <div class="border border-slate-200 rounded-xl p-3.5 hover:border-emerald-600 transition cursor-pointer bg-slate-50" onclick="openPaymentInstruction('Paket Mandiri (Bulanan)', 'Rp 35.000')">
                     <div class="flex justify-between items-center">
                         <span class="font-bold text-xs text-slate-900">Paket Mandiri (Bulanan)</span>
                         <span class="text-xs font-bold text-emerald-600">Rp 35.000 / bln</span>
@@ -102,7 +102,7 @@
                     <p class="text-[10px] text-slate-500 mt-0.5">Akses penuh seluruh fitur manajemen & kalkulator.</p>
                 </div>
 
-                <div class="border-2 border-emerald-600 rounded-xl p-3.5 bg-emerald-50/50 shadow-xs relative cursor-pointer" onclick="payViaWA('Paket Promo Tahunan - Rp 349.000')">
+                <div class="border-2 border-emerald-600 rounded-xl p-3.5 bg-emerald-50/50 shadow-xs relative cursor-pointer" onclick="openPaymentInstruction('Paket Promo Tahunan', 'Rp 349.000')">
                     <span class="absolute -top-2.5 right-4 bg-emerald-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">🔥 HEMAT & FAVORIT</span>
                     <div class="flex justify-between items-center">
                         <span class="font-bold text-xs text-emerald-900">Paket Promo Tahunan</span>
@@ -112,7 +112,7 @@
                 </div>
             </div>
 
-            <p class="text-[10px] text-slate-400">Klik salah satu paket di atas untuk konfirmasi pembayaran otomatis via WhatsApp ke drh. Najib.</p>
+            <p class="text-[10px] text-slate-400">Klik salah satu paket di atas untuk melihat instruksi transfer pembayaran.</p>
             <button onclick="handleLogout()" class="text-xs text-rose-600 font-semibold hover:underline pt-2">Keluar / Ganti Akun</button>
         </div>
     </div>
@@ -293,11 +293,11 @@
                     </h4>
                     <p class="text-[11px] text-slate-600">Pilih paket di bawah untuk melanjutkan akses penuh setelah masa uji coba:</p>
                     <div class="grid grid-cols-2 gap-2 pt-1">
-                        <button onclick="payViaWA('Paket Bulanan - Rp 35.000')" class="bg-white border border-slate-200 hover:border-emerald-600 p-2.5 rounded-xl text-left transition shadow-xs cursor-pointer">
+                        <button onclick="openPaymentInstruction('Paket Bulanan', 'Rp 35.000')" class="bg-white border border-slate-200 hover:border-emerald-600 p-2.5 rounded-xl text-left transition shadow-xs cursor-pointer">
                             <div class="text-[10px] font-semibold text-slate-500">Bulanan</div>
                             <div class="text-xs font-bold text-slate-900">Rp 35.000</div>
                         </button>
-                        <button onclick="payViaWA('Paket Promo Tahunan - Rp 349.000')" class="bg-emerald-600 hover:bg-emerald-700 text-white p-2.5 rounded-xl text-left transition shadow-xs cursor-pointer">
+                        <button onclick="openPaymentInstruction('Paket Promo Tahunan', 'Rp 349.000')" class="bg-emerald-600 hover:bg-emerald-700 text-white p-2.5 rounded-xl text-left transition shadow-xs cursor-pointer">
                             <div class="text-[10px] font-semibold text-emerald-200">Promo Tahunan</div>
                             <div class="text-xs font-bold">Rp 349.000</div>
                         </button>
@@ -415,6 +415,62 @@
     </div>
 
     <!-- MODALS -->
+    <!-- Modal Instruksi Pembayaran (BARU) -->
+    <div id="paymentModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-2xs z-50 hidden flex items-center justify-center p-4 no-print">
+        <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4 text-left">
+            <div class="flex items-center justify-between border-b pb-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-base">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-sm">Instruksi Pembayaran</h3>
+                        <p class="text-[10px] text-slate-500" id="selectedPackageLabel">-</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('paymentModal')" class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3 text-xs text-slate-700">
+                <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl space-y-1">
+                    <p class="font-bold text-amber-900"><i class="fa-solid fa-circle-info"></i> Silakan Melakukan Transfer</p>
+                    <p class="text-[11px] text-amber-800">Lakukan pembayaran sesuai nominal paket yang Anda pilih ke rekening resmi berikut:</p>
+                </div>
+
+                <div class="bg-slate-50 border border-slate-200 p-3.5 rounded-xl space-y-1.5 shadow-2xs">
+                    <div class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Bank BCA</div>
+                    <div class="flex justify-between items-center">
+                        <span class="font-mono font-bold text-sm text-slate-900 tracking-wider">0300664695</span>
+                        <button onclick="copyAccountNo('0300664695')" class="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-[10px] font-bold px-2.5 py-1 rounded-lg transition">
+                            <i class="fa-solid fa-copy"></i> Salin No. Rek
+                        </button>
+                    </div>
+                    <div class="text-xs font-semibold text-slate-800 pt-1">Atas Nama: Nur Rohman Najib</div>
+                </div>
+
+                <div class="space-y-1.5 pt-1">
+                    <p class="font-bold text-slate-900 text-xs">Langkah Selanjutnya:</p>
+                    <ol class="list-decimal list-inside space-y-1 text-slate-600 text-[11px]">
+                        <li>Transfer sesuai nominal tagihan paket.</li>
+                        <li>Simpan bukti transfer / struk pembayaran.</li>
+                        <li>Klik tombol konfirmasi di bawah untuk kirim bukti via WhatsApp ke admin.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="pt-2 space-y-2">
+                <button onclick="confirmPaymentViaWA()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md transition flex items-center justify-center gap-2 text-xs">
+                    <i class="fa-brands fa-whatsapp text-base"></i> Kirim Bukti Pembayaran via WhatsApp
+                </button>
+                <button onclick="closeModal('paymentModal')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-2.5 rounded-xl transition text-xs">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Ubah Nama Farm -->
     <div id="editFarmModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-2xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 no-print">
         <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl">
@@ -609,6 +665,7 @@
         let currentFarmName = 'Farm Sapi Mandiri';
         let allCowsData = [];
         let milkChartInstance = null;
+        let selectedPackageInfo = '';
 
         document.getElementById('healthDate').value = new Date().toISOString().split('T')[0];
         document.getElementById('milkDate').value = new Date().toISOString().split('T')[0];
@@ -678,9 +735,20 @@
             }
         }
 
-        function payViaWA(paketName) {
+        function openPaymentInstruction(packageName, packagePrice) {
+            selectedPackageInfo = `${packageName} (${packagePrice})`;
+            document.getElementById('selectedPackageLabel').innerText = selectedPackageInfo;
+            openModal('paymentModal');
+        }
+
+        function copyAccountNo(text) {
+            navigator.clipboard.writeText(text);
+            alert('Nomor rekening berhasil disalin: ' + text);
+        }
+
+        function confirmPaymentViaWA() {
             const phoneAdmin = '6281215667746'; 
-            const message = `Halo SapiKu, saya ingin melakukan konfirmasi pembayaran langganan aplikasi SapiKu untuk %0A*${paketName}*.%0A%0ANama Farm: ${currentFarmName}%0ABerikut saya lampirkan bukti transfernya. Terima kasih!`;
+            const message = `Halo SapiKu, saya telah melakukan pembayaran untuk *${selectedPackageInfo}*.%0A%0ANama Farm: ${currentFarmName}%0ABerikut saya lampirkan bukti transfernya. Mohon bantu verifikasi. Terima kasih!`;
             window.open(`https://wa.me/${phoneAdmin}?text=${message}`, '_blank');
         }
 
