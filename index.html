@@ -189,7 +189,7 @@
                             Peternakan Anda, lebih cerdas dengan SapiKu.
                         </h2>
                         <p class="text-xs text-slate-300 leading-relaxed">
-                            Pantau reproduksi, jadwal melahirkan, dan statistik produksi susu harian secara real-time.
+                            Pantau reproduksi, siklus birahi (estrus), jadwal melahirkan, dan statistik susu harian.
                         </p>
                     </div>
                 </div>
@@ -225,21 +225,22 @@
                     </div>
                 </div>
 
+                <!-- MODUL PERINGATAN SIKLUS BIRAHI & GESTASI -->
                 <div class="bg-white rounded-xl border border-slate-200/80 shadow-xs p-4">
                     <div class="flex items-center justify-between mb-3">
                         <h3 class="font-bold text-sm text-slate-900 flex items-center gap-1.5">
-                            <i class="fa-solid fa-bell text-amber-500"></i> Peringatan Reproduksi & Gestasi
+                            <i class="fa-solid fa-bell text-amber-500"></i> Peringatan Birahi & Reproduksi
                         </h3>
-                        <span class="text-[10px] bg-amber-50 text-amber-600 font-bold px-2 py-0.5 rounded-full">Kalkulator AI</span>
+                        <span class="text-[10px] bg-amber-50 text-amber-600 font-bold px-2 py-0.5 rounded-full">AI Tracker</span>
                     </div>
                     <div id="repro-alerts-list" class="space-y-2 text-xs">
-                        <div class="text-center text-slate-400 py-3">Menghitung data gestasi sapi...</div>
+                        <div class="text-center text-slate-400 py-3">Menghitung data siklus & gestasi sapi...</div>
                     </div>
                 </div>
 
                 <div class="bg-white rounded-xl border border-slate-200/80 shadow-xs p-4">
                     <div class="flex items-center justify-between mb-3">
-                        <h3 class="font-bold text-sm text-slate-900">Aktivitas Medis Terakhir</h3>
+                        <h3 class="font-bold text-sm text-slate-900">Aktivitas Medis & Birahi Terakhir</h3>
                         <span class="text-[10px] bg-emerald-50 text-emerald-600 font-bold px-2 py-0.5 rounded-full">Kandang Saya</span>
                     </div>
                     <div id="recent-activities-list" class="space-y-2.5 text-xs">
@@ -311,7 +312,7 @@
                         </div>
                         <div>
                             <h4 class="font-bold text-xs text-slate-900">Ekspor File Excel (.xlsx)</h4>
-                            <p class="text-[11px] text-slate-500">Unduh data rekap sapi, riwayat medis, & perahan susu ke Excel.</p>
+                            <p class="text-[11px] text-slate-500">Unduh data rekap sapi, riwayat medis/birahi, & perahan susu ke Excel.</p>
                         </div>
                     </div>
                     <button onclick="exportToExcel()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2.5 rounded-xl shadow-xs transition flex items-center justify-center gap-2">
@@ -494,12 +495,12 @@
         </div>
     </div>
 
-    <!-- Modal Rekam Medis & IB -->
+    <!-- Modal Rekam Medis, Birahi & IB -->
     <div id="healthModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-2xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 no-print">
         <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                    <i class="fa-solid fa-file-medical text-emerald-600"></i> Rekam Medis & Reproduksi
+                    <i class="fa-solid fa-file-medical text-emerald-600"></i> Rekam Medis, Birahi & IB
                 </h3>
                 <button onclick="closeModal('healthModal')" class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
                     <i class="fa-solid fa-xmark"></i>
@@ -515,6 +516,7 @@
                 <div>
                     <label class="block font-semibold text-slate-700 mb-1">Kategori Tindakan</label>
                     <select id="healthCategory" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-emerald-600">
+                        <option value="Birahi (Estrus)">🔥 Pencatatan Birahi (Estrus)</option>
                         <option value="Inseminasi Buatan (IB)">Inseminasi Buatan (IB)</option>
                         <option value="Pemeriksaan Kebuntingan">Pemeriksaan Kebuntingan</option>
                         <option value="Vaksinasi">Vaksinasi</option>
@@ -530,11 +532,11 @@
                     <input type="text" id="healthTreatedBy" placeholder="Contoh: drh. Najib" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-emerald-600">
                 </div>
                 <div>
-                    <label class="block font-semibold text-slate-700 mb-1">Catatan Medis</label>
-                    <textarea id="healthNotes" rows="2" placeholder="Masukkan detail diagnosa atau straw IB..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-emerald-600"></textarea>
+                    <label class="block font-semibold text-slate-700 mb-1">Catatan / Detail Tanda Birahi</label>
+                    <textarea id="healthNotes" rows="2" placeholder="Contoh: Lendir benang, gelisah, berdiri jika dinaiki..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-emerald-600"></textarea>
                 </div>
                 <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md transition mt-2">
-                    Simpan Riwayat Medis
+                    Simpan Catatan
                 </button>
             </form>
         </div>
@@ -945,18 +947,24 @@
                 .limit(5);
 
             if (error || !healths || healths.length === 0) {
-                container.innerHTML = `<div class="p-3 bg-slate-50 border rounded-lg text-center text-slate-400 text-xs">Belum ada catatan aktivitas medis.</div>`;
+                container.innerHTML = `<div class="p-3 bg-slate-50 border rounded-lg text-center text-slate-400 text-xs">Belum ada catatan aktivitas medis atau birahi.</div>`;
                 return;
             }
 
             let html = '';
             healths.forEach(h => {
                 const tag = h.cattle ? h.cattle.ear_tag : '-';
+                let iconClass = "fa-file-medical";
+                let bgClass = "bg-emerald-50 text-emerald-600 border-emerald-100";
+                if (h.category === 'Birahi (Estrus)') {
+                    iconClass = "fa-fire";
+                    bgClass = "bg-amber-50 text-amber-600 border-amber-100";
+                }
                 html += `
                     <div class="flex items-center justify-between pb-2 border-b border-slate-100 last:border-0 last:pb-0">
                         <div class="flex items-center gap-2.5">
-                            <span class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center font-bold text-[10px]">
-                                <i class="fa-solid fa-file-medical"></i>
+                            <span class="w-7 h-7 rounded-lg ${bgClass} border flex items-center justify-center font-bold text-[10px]">
+                                <i class="fa-solid ${iconClass}"></i>
                             </span>
                             <div>
                                 <span class="font-bold text-slate-800 text-xs">Sapi ${tag}</span>
@@ -972,46 +980,75 @@
 
         async function loadReproAlerts() {
             const container = document.getElementById('repro-alerts-list');
-            const { data: ibEvents, error } = await _supabase
+            const { data: records, error } = await _supabase
                 .from('health_records')
                 .select('*, cattle(ear_tag, user_id)')
-                .eq('category', 'Inseminasi Buatan (IB)')
+                .in('category', ['Inseminasi Buatan (IB)', 'Birahi (Estrus)'])
                 .eq('cattle.user_id', currentUser.id)
                 .order('record_date', { ascending: false });
 
-            if (error || !ibEvents || ibEvents.length === 0) {
-                container.innerHTML = `<div class="p-3 bg-slate-50 border rounded-lg text-center text-slate-400 text-xs">Belum ada catatan IB untuk kalkulasi gestasi.</div>`;
+            if (error || !records || records.length === 0) {
+                container.innerHTML = `<div class="p-3 bg-slate-50 border rounded-lg text-center text-slate-400 text-xs">Belum ada catatan reproduksi atau siklus birahi.</div>`;
                 return;
             }
 
             let alertsHtml = '';
             const today = new Date();
+            const processedCows = new Set();
 
-            ibEvents.forEach(ev => {
-                if (!ev.cattle) return;
-                const ibDate = new Date(ev.record_date);
-                const calvingDate = new Date(ibDate);
-                calvingDate.setDate(ibDate.getDate() + 280);
+            records.forEach(ev => {
+                if (!ev.cattle || processedCows.has(ev.cattle_id)) return;
+                processedCows.add(ev.cattle_id);
 
-                const daysFromIB = Math.floor((today - ibDate) / (1000 * 60 * 60 * 24));
-                const daysToCalving = Math.floor((calvingDate - today) / (1000 * 60 * 60 * 24));
+                const evDate = new Date(ev.record_date);
+                const diffDays = Math.floor((today - evDate) / (1000 * 60 * 60 * 24));
 
-                let statusBadge = `<span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-bold text-[10px]">Bunting (~${daysFromIB} Hari)</span>`;
-                if (daysToCalving <= 30 && daysToCalving >= 0) {
-                    statusBadge = `<span class="bg-rose-100 text-rose-700 px-2 py-0.5 rounded font-bold text-[10px]">⚠️ Siap Melahirkan (${daysToCalving} hari lagi)</span>`;
+                if (ev.category === 'Inseminasi Buatan (IB)') {
+                    const calvingDate = new Date(evDate);
+                    calvingDate.setDate(evDate.getDate() + 280);
+                    const daysToCalving = Math.floor((calvingDate - today) / (1000 * 60 * 60 * 24));
+
+                    let statusBadge = `<span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-bold text-[10px]">Bunting (~${diffDays} Hari)</span>`;
+                    if (daysToCalving <= 30 && daysToCalving >= 0) {
+                        statusBadge = `<span class="bg-rose-100 text-rose-700 px-2 py-0.5 rounded font-bold text-[10px]">⚠️ Siap Melahirkan (${daysToCalving} hr lagi)</span>`;
+                    }
+
+                    alertsHtml += `
+                        <div class="p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl space-y-1">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-slate-900">Sapi Tag: ${ev.cattle.ear_tag} (IB)</span>
+                                ${statusBadge}
+                            </div>
+                            <div class="text-[10px] text-slate-500">🐮 Estimasi Melahirkan: <b class="text-slate-700">${calvingDate.toLocaleDateString('id-ID')}</b></div>
+                        </div>
+                    `;
+                } else if (ev.category === 'Birahi (Estrus)') {
+                    const nextEstrusMin = new Date(evDate);
+                    nextEstrusMin.setDate(evDate.getDate() + 18);
+                    const nextEstrusMax = new Date(evDate);
+                    nextEstrusMax.setDate(evDate.getDate() + 24);
+
+                    const daysToNextMin = Math.floor((nextEstrusMin - today) / (1000 * 60 * 60 * 24));
+                    const daysToNextMax = Math.floor((nextEstrusMax - today) / (1000 * 60 * 60 * 24));
+
+                    let estrusBadge = `<span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold text-[10px]">Siklus Normal (18-24 hr)</span>`;
+                    
+                    if (daysToNextMin <= 0 && daysToNextMax >= 0) {
+                        estrusBadge = `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold text-[10px] animate-pulse">🔥 Jendela Birahi Hari Ini! Siapkan IB</span>`;
+                    } else if (daysToNextMin > 0) {
+                        estrusBadge = `<span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-bold text-[10px]">Estimasi Birahi Lagi (${daysToNextMin}-${daysToNextMax} hr lagi)</span>`;
+                    }
+
+                    alertsHtml += `
+                        <div class="p-2.5 bg-amber-50/40 border border-amber-200/60 rounded-xl space-y-1">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-slate-900">Sapi Tag: ${ev.cattle.ear_tag} (Birahi Terakhir)</span>
+                                ${estrusBadge}
+                            </div>
+                            <div class="text-[10px] text-slate-600">📅 Tanggal Birahi: ${ev.record_date} | Rentang Siklus: <b>${nextEstrusMin.toLocaleDateString('id-ID')} - ${nextEstrusMax.toLocaleDateString('id-ID')}</b></div>
+                        </div>
+                    `;
                 }
-
-                alertsHtml += `
-                    <div class="p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl space-y-1">
-                        <div class="flex items-center justify-between">
-                            <span class="font-bold text-slate-900">Sapi Tag: ${ev.cattle.ear_tag}</span>
-                            ${statusBadge}
-                        </div>
-                        <div class="grid grid-cols-2 text-[10px] text-slate-500 pt-1">
-                            <div>🐮 Melahirkan: <b class="text-slate-700">${calvingDate.toLocaleDateString('id-ID')}</b></div>
-                        </div>
-                    </div>
-                `;
             });
 
             container.innerHTML = alertsHtml || `<div class="p-3 bg-slate-50 border rounded-lg text-center text-slate-400 text-xs">Belum ada peringatan reproduksi.</div>`;
@@ -1072,7 +1109,6 @@
             openModal('detailModal');
             const container = document.getElementById('detailContent');
             
-            // Cari data lengkap sapi dari allCowsData
             const cowObj = allCowsData.find(c => c.id === cattleId);
 
             container.innerHTML = `
@@ -1088,7 +1124,7 @@
                     </div>
                 </div>
                 <div>
-                    <h4 class="font-bold text-slate-800 mb-2">Riwayat Medis & Reproduksi:</h4>
+                    <h4 class="font-bold text-slate-800 mb-2">Riwayat Birahi & Medis:</h4>
                     <div id="cowEventsList" class="space-y-2"><p class="text-slate-400 text-center py-2">Memuat riwayat...</p></div>
                 </div>
             `;
@@ -1101,17 +1137,20 @@
 
             let eventsContainer = document.getElementById('cowEventsList');
             if (!records || records.length === 0) {
-                eventsContainer.innerHTML = `<div class="p-3 bg-slate-50 border rounded-lg text-center text-slate-400 text-[11px]">Belum ada catatan medis.</div>`;
+                eventsContainer.innerHTML = `<div class="p-3 bg-slate-50 border rounded-lg text-center text-slate-400 text-[11px]">Belum ada catatan birahi atau medis.</div>`;
                 return;
             }
 
             let html = '';
             records.forEach(r => {
+                let badgeColor = "bg-emerald-50 text-emerald-700";
+                if (r.category === 'Birahi (Estrus)') badgeColor = "bg-amber-50 text-amber-800 border border-amber-200";
+
                 html += `
                     <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg flex justify-between items-start">
                         <div>
-                            <span class="font-bold text-emerald-700 text-[11px]">${r.category}</span>
-                            <p class="text-slate-600 text-[11px] mt-0.5">${r.notes || 'Tanpa catatan'} (Oleh: ${r.treated_by || '-'})</p>
+                            <span class="font-bold px-2 py-0.5 rounded text-[10px] ${badgeColor}">${r.category}</span>
+                            <p class="text-slate-600 text-[11px] mt-1">${r.notes || 'Tanpa catatan'} (Oleh: ${r.treated_by || '-'})</p>
                             <span class="text-[9px] text-slate-400 block mt-1">📅 ${r.record_date}</span>
                         </div>
                         <button onclick="deleteHealthRecord('${r.id}', '${cattleId}', '${earTag}', '${name}')" class="text-rose-500 hover:bg-rose-50 p-1.5 rounded text-xs" title="Hapus catatan">
@@ -1140,8 +1179,7 @@
         }
 
         async function deleteCow(cattleId) {
-            if (confirm("Apakah Anda yakin ingin menghapus data sapi ini beserta seluruh riwayat medisnya?")) {
-                // Hapus riwayat medis terkait terlebih dahulu
+            if (confirm("Apakah Anda yakin ingin menghapus data sapi ini beserta seluruh riwayat birahi & medisnya?")) {
                 await _supabase.from('health_records').delete().eq('cattle_id', cattleId);
                 await _supabase.from('milk_production').delete().eq('cattle_id', cattleId);
                 
@@ -1159,12 +1197,12 @@
         }
 
         async function deleteHealthRecord(recordId, cattleId, earTag, name) {
-            if (confirm("Apakah Anda yakin ingin menghapus catatan medis/IB ini?")) {
+            if (confirm("Apakah Anda yakin ingin menghapus catatan ini?")) {
                 const { error } = await _supabase.from('health_records').delete().eq('id', recordId);
                 if (error) {
                     alert("Gagal menghapus catatan: " + error.message);
                 } else {
-                    alert("Catatan medis berhasil dihapus!");
+                    alert("Catatan berhasil dihapus!");
                     openCowDetail(cattleId, earTag, name);
                     loadDashboardData();
                 }
@@ -1183,14 +1221,12 @@
 
             let error;
             if (cattleId) {
-                // Mode Edit
                 const res = await _supabase
                     .from('cattle')
                     .update({ ear_tag, name, breed, gender, weight, status })
                     .eq('id', cattleId);
                 error = res.error;
             } else {
-                // Mode Tambah Baru
                 const res = await _supabase
                     .from('cattle')
                     .insert([{ ear_tag, name, breed, gender, weight, status, user_id: currentUser.id }]);
@@ -1225,9 +1261,9 @@
                 .insert([{ cattle_id, category, record_date, treated_by, notes }]);
 
             if (error) {
-                alert('Gagal merekam medis: ' + error.message);
+                alert('Gagal merekam data: ' + error.message);
             } else {
-                alert('Riwayat medis berhasil disimpan!');
+                alert('Catatan berhasil disimpan!');
                 document.getElementById('healthForm').reset();
                 closeModal('healthModal');
                 loadDashboardData();
@@ -1308,7 +1344,6 @@
         function closeModal(id) { 
             document.getElementById(id).classList.add('hidden'); 
             if (id === 'cowModal') {
-                // Reset form tambah/edit sapi saat modal ditutup
                 document.getElementById('cowForm').reset();
                 document.getElementById('editCattleId').value = '';
                 document.getElementById('cowModalTitle').innerHTML = `<i class="fa-solid fa-cow text-emerald-600"></i> Tambah Data Sapi Baru`;
