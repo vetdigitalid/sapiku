@@ -583,7 +583,7 @@
     <div id="cowModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-2xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 no-print">
         <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2" id="cowModalTitle">
                     <i class="fa-solid fa-cow text-emerald-600"></i> Tambah Data Sapi Baru
                 </h3>
                 <button onclick="closeModal('cowModal')" class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
@@ -591,6 +591,7 @@
                 </button>
             </div>
             <form id="cowForm" onsubmit="handleCowSubmit(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="editCattleId">
                 <div>
                     <label class="block font-semibold text-slate-700 mb-1">Nomor Ear Tag</label>
                     <input type="text" id="newEarTag" placeholder="Contoh: TAG-001" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-emerald-600">
@@ -628,7 +629,7 @@
                         </select>
                     </div>
                 </div>
-                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md transition mt-2">
+                <button type="submit" id="cowSubmitBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md transition mt-2">
                     Simpan Sapi ke Database
                 </button>
             </form>
@@ -1071,10 +1072,20 @@
             openModal('detailModal');
             const container = document.getElementById('detailContent');
             
+            // Cari data lengkap sapi dari allCowsData
+            const cowObj = allCowsData.find(c => c.id === cattleId);
+
             container.innerHTML = `
-                <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-100">
-                    <span class="font-bold text-emerald-800 text-sm">Tag: ${earTag}</span>
-                    <h4 class="font-bold text-slate-900 text-base">${name}</h4>
+                <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-100 flex justify-between items-center">
+                    <div>
+                        <span class="font-bold text-emerald-800 text-sm">Tag: ${earTag}</span>
+                        <h4 class="font-bold text-slate-900 text-base">${name}</h4>
+                        <p class="text-[10px] text-slate-600 mt-0.5">Breed: ${cowObj ? cowObj.breed : '-'} | Bobot: ${cowObj ? cowObj.weight : 0} Kg | Status: ${cowObj ? cowObj.status : '-'}</p>
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <button onclick='openEditCowModal(${JSON.stringify(cowObj)})' class="bg-emerald-600 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg shadow-xs"><i class="fa-solid fa-pen"></i> Edit Sapi</button>
+                        <button onclick="deleteCow('${cattleId}')" class="bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 text-[10px] font-bold px-2.5 py-1.5 rounded-lg"><i class="fa-solid fa-trash"></i> Hapus</button>
+                    </div>
                 </div>
                 <div>
                     <h4 class="font-bold text-slate-800 mb-2">Riwayat Medis & Reproduksi:</h4>
@@ -1101,16 +1112,68 @@
                         <div>
                             <span class="font-bold text-emerald-700 text-[11px]">${r.category}</span>
                             <p class="text-slate-600 text-[11px] mt-0.5">${r.notes || 'Tanpa catatan'} (Oleh: ${r.treated_by || '-'})</p>
+                            <span class="text-[9px] text-slate-400 block mt-1">📅 ${r.record_date}</span>
                         </div>
-                        <span class="text-[9px] text-slate-400">${r.record_date}</span>
+                        <button onclick="deleteHealthRecord('${r.id}', '${cattleId}', '${earTag}', '${name}')" class="text-rose-500 hover:bg-rose-50 p-1.5 rounded text-xs" title="Hapus catatan">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
                     </div>
                 `;
             });
             eventsContainer.innerHTML = html;
         }
 
+        function openEditCowModal(cow) {
+            closeModal('detailModal');
+            document.getElementById('cowModalTitle').innerHTML = `<i class="fa-solid fa-pen text-emerald-600"></i> Edit Data Sapi`;
+            document.getElementById('cowSubmitBtn').innerText = `Perbarui Data Sapi`;
+            
+            document.getElementById('editCattleId').value = cow.id;
+            document.getElementById('newEarTag').value = cow.ear_tag;
+            document.getElementById('newCowName').value = cow.name || '';
+            document.getElementById('newBreed').value = cow.breed || '';
+            document.getElementById('newGender').value = cow.gender || 'Betina';
+            document.getElementById('newWeight').value = cow.weight || '';
+            document.getElementById('newStatus').value = cow.status || 'Sehat';
+
+            openModal('cowModal');
+        }
+
+        async function deleteCow(cattleId) {
+            if (confirm("Apakah Anda yakin ingin menghapus data sapi ini beserta seluruh riwayat medisnya?")) {
+                // Hapus riwayat medis terkait terlebih dahulu
+                await _supabase.from('health_records').delete().eq('cattle_id', cattleId);
+                await _supabase.from('milk_production').delete().eq('cattle_id', cattleId);
+                
+                const { error } = await _supabase.from('cattle').delete().eq('id', cattleId);
+                if (error) {
+                    alert("Gagal menghapus sapi: " + error.message);
+                } else {
+                    alert("Data sapi berhasil dihapus!");
+                    closeModal('detailModal');
+                    loadCowsFromDatabase();
+                    loadDashboardData();
+                    loadCowsDropdowns();
+                }
+            }
+        }
+
+        async function deleteHealthRecord(recordId, cattleId, earTag, name) {
+            if (confirm("Apakah Anda yakin ingin menghapus catatan medis/IB ini?")) {
+                const { error } = await _supabase.from('health_records').delete().eq('id', recordId);
+                if (error) {
+                    alert("Gagal menghapus catatan: " + error.message);
+                } else {
+                    alert("Catatan medis berhasil dihapus!");
+                    openCowDetail(cattleId, earTag, name);
+                    loadDashboardData();
+                }
+            }
+        }
+
         async function handleCowSubmit(event) {
             event.preventDefault();
+            const cattleId = document.getElementById('editCattleId').value;
             const ear_tag = document.getElementById('newEarTag').value;
             const name = document.getElementById('newCowName').value;
             const breed = document.getElementById('newBreed').value;
@@ -1118,15 +1181,30 @@
             const weight = parseFloat(document.getElementById('newWeight').value) || 0;
             const status = document.getElementById('newStatus').value;
 
-            const { error } = await _supabase
-                .from('cattle')
-                .insert([{ ear_tag, name, breed, gender, weight, status, user_id: currentUser.id }]);
+            let error;
+            if (cattleId) {
+                // Mode Edit
+                const res = await _supabase
+                    .from('cattle')
+                    .update({ ear_tag, name, breed, gender, weight, status })
+                    .eq('id', cattleId);
+                error = res.error;
+            } else {
+                // Mode Tambah Baru
+                const res = await _supabase
+                    .from('cattle')
+                    .insert([{ ear_tag, name, breed, gender, weight, status, user_id: currentUser.id }]);
+                error = res.error;
+            }
 
             if (error) {
                 alert('Gagal menyimpan: ' + error.message);
             } else {
-                alert('Sapi baru berhasil disimpan!');
+                alert(cattleId ? 'Data sapi berhasil diperbarui!' : 'Sapi baru berhasil disimpan!');
                 document.getElementById('cowForm').reset();
+                document.getElementById('editCattleId').value = '';
+                document.getElementById('cowModalTitle').innerHTML = `<i class="fa-solid fa-cow text-emerald-600"></i> Tambah Data Sapi Baru`;
+                document.getElementById('cowSubmitBtn').innerText = `Simpan Sapi ke Database`;
                 closeModal('cowModal');
                 loadCowsFromDatabase();
                 loadDashboardData();
@@ -1227,7 +1305,16 @@
         }
 
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function closeModal(id) { 
+            document.getElementById(id).classList.add('hidden'); 
+            if (id === 'cowModal') {
+                // Reset form tambah/edit sapi saat modal ditutup
+                document.getElementById('cowForm').reset();
+                document.getElementById('editCattleId').value = '';
+                document.getElementById('cowModalTitle').innerHTML = `<i class="fa-solid fa-cow text-emerald-600"></i> Tambah Data Sapi Baru`;
+                document.getElementById('cowSubmitBtn').innerText = `Simpan Sapi ke Database`;
+            }
+        }
 
         async function renderChartFromDatabase() {
             const labels = [];
