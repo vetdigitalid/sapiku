@@ -135,11 +135,14 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-1.5">
-                    <button onclick="openModal('milkModal')" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold px-2.5 py-2 rounded-lg flex items-center gap-1 transition shadow-sm">
+                    <button onclick="openModal('financeModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-2 py-2 rounded-lg flex items-center gap-1 transition shadow-sm" title="Catat Keuangan">
+                        <i class="fa-solid fa-wallet"></i> Keuangan
+                    </button>
+                    <button onclick="openModal('milkModal')" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold px-2 py-2 rounded-lg flex items-center gap-1 transition shadow-sm" title="Catat Susu">
                         <i class="fa-solid fa-glass-water"></i> Susu
                     </button>
-                    <button onclick="openModal('healthModal')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-2.5 py-2 rounded-lg flex items-center gap-1 transition shadow-sm">
-                        <i class="fa-solid fa-plus"></i> Medis / IB
+                    <button onclick="openModal('healthModal')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-2 py-2 rounded-lg flex items-center gap-1 transition shadow-sm" title="Catat Medis / IB">
+                        <i class="fa-solid fa-plus"></i> Medis
                     </button>
                     <button onclick="handleLogout()" title="Keluar Akun" class="bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold p-2 rounded-lg transition border border-rose-200">
                         <i class="fa-solid fa-right-from-bracket"></i>
@@ -189,11 +192,12 @@
                             Peternakan Anda, lebih cerdas dengan SapiKu.
                         </h2>
                         <p class="text-xs text-slate-300 leading-relaxed">
-                            Pantau reproduksi, siklus birahi (estrus), jadwal melahirkan, dan statistik susu harian.
+                            Pantau keuangan, reproduksi, siklus birahi (estrus), dan produksi susu harian.
                         </p>
                     </div>
                 </div>
 
+                <!-- KARTU RINGKASAN UTAMA -->
                 <div class="grid grid-cols-2 gap-3">
                     <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
                         <div class="flex items-center justify-between mb-2">
@@ -221,6 +225,30 @@
                         </div>
                         <div class="text-[10px] text-emerald-600 font-semibold mt-1">
                             <i class="fa-solid fa-cloud-arrow-up"></i> Real-time Log
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KARTU Kalkulasi Bisnis & Keuangan (BARU) -->
+                <div class="bg-white rounded-xl border border-slate-200/80 shadow-xs p-4 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-sm text-slate-900 flex items-center gap-1.5">
+                            <i class="fa-solid fa-calculator text-indigo-600"></i> Kalkulasi Bisnis & Keuangan
+                        </h3>
+                        <span class="text-[10px] bg-indigo-50 text-indigo-600 font-bold px-2 py-0.5 rounded-full">Profit & Loss</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 pt-1 text-center">
+                        <div class="bg-emerald-50 border border-emerald-100 p-2.5 rounded-xl">
+                            <span class="text-[10px] text-emerald-700 font-semibold block">Pemasukan</span>
+                            <b class="text-xs text-emerald-900" id="summaryTotalIncome">Rp 0</b>
+                        </div>
+                        <div class="bg-rose-50 border border-rose-100 p-2.5 rounded-xl">
+                            <span class="text-[10px] text-rose-700 font-semibold block">Pengeluaran</span>
+                            <b class="text-xs text-rose-900" id="summaryTotalExpense">Rp 0</b>
+                        </div>
+                        <div class="bg-indigo-50 border border-indigo-100 p-2.5 rounded-xl">
+                            <span class="text-[10px] text-indigo-700 font-semibold block">Keuntungan</span>
+                            <b class="text-xs text-indigo-900" id="summaryNetProfit">Rp 0</b>
                         </div>
                     </div>
                 </div>
@@ -312,7 +340,7 @@
                         </div>
                         <div>
                             <h4 class="font-bold text-xs text-slate-900">Ekspor File Excel (.xlsx)</h4>
-                            <p class="text-[11px] text-slate-500">Unduh data rekap sapi, riwayat medis/birahi, & perahan susu ke Excel.</p>
+                            <p class="text-[11px] text-slate-500">Unduh data rekap sapi, keuangan, & perahan susu ke Excel.</p>
                         </div>
                     </div>
                     <button onclick="exportToExcel()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2.5 rounded-xl shadow-xs transition flex items-center justify-center gap-2">
@@ -495,6 +523,48 @@
         </div>
     </div>
 
+    <!-- Modal Pencatatan Keuangan (BARU) -->
+    <div id="financeModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-2xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 no-print">
+        <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-wallet text-indigo-600"></i> Catat Keuangan (Masuk / Keluar)
+                </h3>
+                <button onclick="closeModal('financeModal')" class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <form id="financeForm" onsubmit="handleFinanceSubmit(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Jenis Transaksi</label>
+                    <select id="financeType" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-emerald-600">
+                        <option value="Pemasukan">🟢 Pemasukan (Penjualan Susu / Ternak)</option>
+                        <option value="Pengeluaran">🔴 Pengeluaran (Pakan, Obat, Inseminator, dll)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Kategori</label>
+                    <input type="text" id="financeCategory" placeholder="Contoh: Pembelian Konsentrat / Jasa Inseminator" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-emerald-600">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Nominal (Rp)</label>
+                    <input type="number" step="100" id="financeAmount" placeholder="Contoh: 150000" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-emerald-600">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Tanggal Transaksi</label>
+                    <input type="date" id="financeDate" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-emerald-600">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Keterangan / Catatan</label>
+                    <textarea id="financeNotes" rows="2" placeholder="Detail transaksi..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium focus:outline-none focus:border-emerald-600"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-md transition mt-2">
+                    Simpan Transaksi Keuangan
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal Rekam Medis, Birahi & IB -->
     <div id="healthModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-2xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 no-print">
         <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl">
@@ -672,6 +742,7 @@
 
         document.getElementById('healthDate').value = new Date().toISOString().split('T')[0];
         document.getElementById('milkDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('financeDate').value = new Date().toISOString().split('T')[0];
 
         window.addEventListener('DOMContentLoaded', async () => {
             const { data: { session } } = await _supabase.auth.getSession();
@@ -933,8 +1004,70 @@
                 document.getElementById('today-milk-total').innerText = totalMilk.toFixed(1);
             }
 
+            loadFinanceSummary();
             loadReproAlerts();
             loadRecentActivities();
+        }
+
+        async function loadFinanceSummary() {
+            const { data: financeData, error } = await _supabase
+                .from('finance_records')
+                .select('*')
+                .eq('user_id', currentUser.id);
+
+            if (error || !financeData) {
+                document.getElementById('summaryTotalIncome').innerText = 'Rp 0';
+                document.getElementById('summaryTotalExpense').innerText = 'Rp 0';
+                document.getElementById('summaryNetProfit').innerText = 'Rp 0';
+                return;
+            }
+
+            let totalIncome = 0;
+            let totalExpense = 0;
+
+            financeData.forEach(f => {
+                const amt = parseFloat(f.amount) || 0;
+                if (f.type === 'Pemasukan') {
+                    totalIncome += amt;
+                } else if (f.type === 'Pengeluaran') {
+                    totalExpense += amt;
+                }
+            });
+
+            const netProfit = totalIncome - totalExpense;
+
+            document.getElementById('summaryTotalIncome').innerText = 'Rp ' + totalIncome.toLocaleString('id-ID');
+            document.getElementById('summaryTotalExpense').innerText = 'Rp ' + totalExpense.toLocaleString('id-ID');
+            const profitElem = document.getElementById('summaryNetProfit');
+            profitElem.innerText = 'Rp ' + netProfit.toLocaleString('id-ID');
+            if (netProfit < 0) {
+                profitElem.className = "text-xs text-rose-700 font-bold";
+            } else {
+                profitElem.className = "text-xs text-indigo-900 font-bold";
+            }
+        }
+
+        async function handleFinanceSubmit(event) {
+            event.preventDefault();
+            const type = document.getElementById('financeType').value;
+            const category = document.getElementById('financeCategory').value.trim();
+            const amount = parseFloat(document.getElementById('financeAmount').value) || 0;
+            const record_date = document.getElementById('financeDate').value;
+            const notes = document.getElementById('financeNotes').value.trim();
+
+            const { error } = await _supabase
+                .from('finance_records')
+                .insert([{ user_id: currentUser.id, type, category, amount, record_date, notes }]);
+
+            if (error) {
+                alert('Gagal menyimpan transaksi keuangan: ' + error.message);
+            } else {
+                alert('Transaksi keuangan berhasil dicatat!');
+                document.getElementById('financeForm').reset();
+                document.getElementById('financeDate').value = new Date().toISOString().split('T')[0];
+                closeModal('financeModal');
+                loadDashboardData();
+            }
         }
 
         async function loadRecentActivities() {
@@ -1294,10 +1427,16 @@
         async function exportToExcel() {
             try {
                 const { data: cows } = await _supabase.from('cattle').select('*').eq('user_id', currentUser.id);
+                const { data: finance } = await _supabase.from('finance_records').select('*').eq('user_id', currentUser.id);
+                
                 const wb = XLSX.utils.book_new();
                 const wsCows = XLSX.utils.json_to_sheet(cows || []);
+                const wsFinance = XLSX.utils.json_to_sheet(finance || []);
+
                 XLSX.utils.book_append_sheet(wb, wsCows, "Daftar Sapi");
-                XLSX.writeFile(wb, `SapiKu_Rekap_${new Date().toISOString().split('T')[0]}.xlsx`);
+                XLSX.utils.book_append_sheet(wb, wsFinance, "Keuangan");
+
+                XLSX.writeFile(wb, `SapiKu_Rekap_Lengkap_${new Date().toISOString().split('T')[0]}.xlsx`);
             } catch (err) {
                 alert('Gagal mengunduh Excel: ' + err.message);
             }
