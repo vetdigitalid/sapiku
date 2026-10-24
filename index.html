@@ -148,7 +148,7 @@
             </div>
         </header>
 
-        <!-- BANNER STATUS TRIAL 14 HARI -->
+        <!-- BANNER STATUS TRIAL / AKTIF -->
         <div id="trialBanner" class="bg-amber-50 border-b border-amber-200 px-4 py-2 text-center text-[11px] font-medium text-amber-800 flex justify-between items-center max-w-md mx-auto w-full no-print">
             <span>🎁 Status: <b id="trialDaysLeft">Menghitung...</b> masa uji coba gratis.</span>
             <button onclick="scrollToReports()" class="bg-amber-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg">Langganan</button>
@@ -415,7 +415,7 @@
     </div>
 
     <!-- MODALS -->
-    <!-- Modal Instruksi Pembayaran (BARU) -->
+    <!-- Modal Instruksi Pembayaran -->
     <div id="paymentModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-2xs z-50 hidden flex items-center justify-center p-4 no-print">
         <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4 text-left">
             <div class="flex items-center justify-between border-b pb-3">
@@ -675,7 +675,6 @@
             if (session) {
                 currentUser = session.user;
                 await fetchUserProfile(currentUser.id);
-                checkTrialStatus(currentUser);
                 showAppScreen();
             } else {
                 showAuthScreen();
@@ -685,14 +684,16 @@
         async function fetchUserProfile(userId) {
             const { data, error } = await _supabase
                 .from('profiles')
-                .select('farm_name')
+                .select('farm_name, subscription_status')
                 .eq('id', userId)
                 .single();
             
-            if (!error && data && data.farm_name) {
-                currentFarmName = data.farm_name;
+            if (!error && data) {
+                currentFarmName = data.farm_name || 'Farm Sapi Mandiri';
+                checkTrialStatus(currentUser, data.subscription_status);
             } else {
                 currentFarmName = 'Farm Sapi Mandiri';
+                checkTrialStatus(currentUser, 'trial');
             }
         }
 
@@ -716,21 +717,31 @@
             }
         }
 
-        function checkTrialStatus(user) {
+        function checkTrialStatus(user, subStatus) {
+            const trialBanner = document.getElementById('trialBanner');
+            const paywall = document.getElementById('paywallModal');
+            const bannerText = document.getElementById('trialDaysLeft');
+
+            // Jika status di database 'active' atau 'pro'
+            if (subStatus === 'active' || subStatus === 'pro') {
+                trialBanner.innerHTML = `<span>✨ Status: <b>SapiKu Pro (Aktif)</b></span> <span class="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Berlangganan</span>`;
+                trialBanner.className = "bg-emerald-50 border-b border-emerald-200 px-4 py-2 text-center text-[11px] font-medium text-emerald-800 flex justify-between items-center max-w-md mx-auto w-full no-print";
+                paywall.classList.add('hidden');
+                return;
+            }
+
+            // Jika masih 'trial', hitung sisa hari dari created_at
             const createdAt = new Date(user.created_at);
             const now = new Date();
             const diffTime = now - createdAt;
             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
             const trialDaysLeft = 14 - diffDays;
 
-            const banner = document.getElementById('trialDaysLeft');
-            const paywall = document.getElementById('paywallModal');
-
             if (trialDaysLeft > 0) {
-                banner.innerText = `Sisa ${trialDaysLeft} Hari`;
+                bannerText.innerText = `Sisa ${trialDaysLeft} Hari`;
                 paywall.classList.add('hidden');
             } else {
-                banner.innerText = `Masa Trial Habis`;
+                bannerText.innerText = `Masa Trial Habis`;
                 paywall.classList.remove('hidden');
             }
         }
@@ -748,7 +759,12 @@
 
         function confirmPaymentViaWA() {
             const phoneAdmin = '6281215667746'; 
-            const message = `Halo SapiKu, saya telah melakukan pembayaran untuk *${selectedPackageInfo}*.%0A%0ANama Farm: ${currentFarmName}%0ABerikut saya lampirkan bukti transfernya. Mohon bantu verifikasi. Terima kasih!`;
+            const userEmail = currentUser ? currentUser.email : '-';
+            const message = `Halo SapiKu, saya telah melakukan pembayaran untuk *${selectedPackageInfo}*.%0A%0A` +
+                            `📌 *Detail Akun:*%0A` +
+                            `• Nama Farm: ${currentFarmName}%0A` +
+                            `• Email Terdaftar: ${userEmail}%0A%0A` +
+                            `Berikut saya lampirkan bukti transfernya. Mohon bantu verifikasi. Terima kasih!`;
             window.open(`https://wa.me/${phoneAdmin}?text=${message}`, '_blank');
         }
 
@@ -815,7 +831,6 @@
                 } else {
                     currentUser = data.user;
                     await fetchUserProfile(currentUser.id);
-                    checkTrialStatus(currentUser);
                     showAppScreen();
                 }
             }
