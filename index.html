@@ -89,8 +89,8 @@
                 <i class="fa-solid fa-triangle-exclamation"></i>
             </div>
             <div>
-                <h3 class="font-bold text-base text-slate-900">Masa Uji Coba (Free Trial) Berakhir</h3>
-                <p class="text-xs text-slate-500 mt-1">Masa aktif gratis 14 hari Anda telah usai. Lanjutkan langganan untuk terus mengelola ternak dan mencetak laporan resmi.</p>
+                <h3 class="font-bold text-base text-slate-900">Masa Uji Coba / Langganan Berakhir</h3>
+                <p class="text-xs text-slate-500 mt-1">Masa aktif akun Anda telah usai. Lanjutkan langganan untuk terus mengelola ternak dan mencetak laporan resmi.</p>
             </div>
 
             <div class="space-y-3 text-left pt-2">
@@ -684,13 +684,13 @@
         async function fetchUserProfile(userId) {
             const { data, error } = await _supabase
                 .from('profiles')
-                .select('farm_name, subscription_status')
+                .select('farm_name, subscription_status, subscription_until')
                 .eq('id', userId)
                 .single();
             
             if (!error && data) {
                 currentFarmName = data.farm_name || 'Farm Sapi Mandiri';
-                checkTrialStatus(currentUser, data.subscription_status);
+                checkSubscriptionExpiry(currentUser, data);
             } else {
                 currentFarmName = 'Farm Sapi Mandiri';
                 checkTrialStatus(currentUser, 'trial');
@@ -717,20 +717,52 @@
             }
         }
 
+        function checkSubscriptionExpiry(user, profileData) {
+            const now = new Date();
+            
+            if (profileData.subscription_status === 'active' || profileData.subscription_status === 'pro') {
+                if (profileData.subscription_until) {
+                    const expiryDate = new Date(profileData.subscription_until);
+                    if (expiryDate > now) {
+                        const formattedDate = expiryDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+                        showActiveProBanner(`SapiKu Pro (Aktif s.d ${formattedDate})`);
+                        return;
+                    } else {
+                        showPaywallExpired();
+                        return;
+                    }
+                } else {
+                    showActiveProBanner('SapiKu Pro (Aktif)');
+                    return;
+                }
+            }
+
+            checkTrialStatus(user, 'trial');
+        }
+
+        function showActiveProBanner(labelText) {
+            const trialBanner = document.getElementById('trialBanner');
+            const paywall = document.getElementById('paywallModal');
+            
+            trialBanner.innerHTML = `<span>✨ Status: <b>${labelText}</b></span> <span class="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Berlangganan</span>`;
+            trialBanner.className = "bg-emerald-50 border-b border-emerald-200 px-4 py-2 text-center text-[11px] font-medium text-emerald-800 flex justify-between items-center max-w-md mx-auto w-full no-print";
+            paywall.classList.add('hidden');
+        }
+
+        function showPaywallExpired() {
+            const trialBanner = document.getElementById('trialBanner');
+            const paywall = document.getElementById('paywallModal');
+            const bannerText = document.getElementById('trialDaysLeft');
+            
+            bannerText.innerText = `Masa Langganan Habis`;
+            paywall.classList.remove('hidden');
+        }
+
         function checkTrialStatus(user, subStatus) {
             const trialBanner = document.getElementById('trialBanner');
             const paywall = document.getElementById('paywallModal');
             const bannerText = document.getElementById('trialDaysLeft');
 
-            // Jika status di database 'active' atau 'pro'
-            if (subStatus === 'active' || subStatus === 'pro') {
-                trialBanner.innerHTML = `<span>✨ Status: <b>SapiKu Pro (Aktif)</b></span> <span class="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Berlangganan</span>`;
-                trialBanner.className = "bg-emerald-50 border-b border-emerald-200 px-4 py-2 text-center text-[11px] font-medium text-emerald-800 flex justify-between items-center max-w-md mx-auto w-full no-print";
-                paywall.classList.add('hidden');
-                return;
-            }
-
-            // Jika masih 'trial', hitung sisa hari dari created_at
             const createdAt = new Date(user.created_at);
             const now = new Date();
             const diffTime = now - createdAt;
