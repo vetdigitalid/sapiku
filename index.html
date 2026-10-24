@@ -66,7 +66,7 @@
                     <div>
                         <label class="block font-semibold text-slate-700 mb-1">Nomor WhatsApp Aktif (untuk Notifikasi)</label>
                         <input type="tel" id="authPhone" placeholder="Contoh: 081234567890" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-medium focus:outline-none focus:border-emerald-600">
-                        <small class="text-[10px] text-slate-400 mt-0.5 block">Digunakan untuk info masa aktif trial & pengingat otomatis.</small>
+                        <small class="text-[10px] text-slate-400 mt-0.5 block">Digunakan untuk info masa aktif trial & pengingat otomatis Fonnte.</small>
                     </div>
                 </div>
 
@@ -253,13 +253,13 @@
                     </div>
                 </div>
 
-                <!-- MODUL PERINGATAN SIKLUS BIRAHI & GESTASI -->
+                <!-- MODUL PERINGATAN SIKLUS BIRAHI & GESTASI + NOTIFIKASI WA -->
                 <div class="bg-white rounded-xl border border-slate-200/80 shadow-xs p-4">
                     <div class="flex items-center justify-between mb-3">
                         <h3 class="font-bold text-sm text-slate-900 flex items-center gap-1.5">
                             <i class="fa-solid fa-bell text-amber-500"></i> Peringatan Birahi & Reproduksi
                         </h3>
-                        <span class="text-[10px] bg-amber-50 text-amber-600 font-bold px-2 py-0.5 rounded-full">AI Tracker</span>
+                        <span class="text-[10px] bg-amber-50 text-amber-600 font-bold px-2 py-0.5 rounded-full">Fonnte WA Ready</span>
                     </div>
                     <div id="repro-alerts-list" class="space-y-2 text-xs">
                         <div class="text-center text-slate-400 py-3">Menghitung data siklus & gestasi sapi...</div>
@@ -741,6 +741,7 @@
         let isRegisterMode = false;
         let currentUser = null;
         let currentFarmName = 'Farm Sapi Mandiri';
+        let currentUserPhone = '';
         let allCowsData = [];
         let milkChartInstance = null;
         let selectedPackageInfo = '';
@@ -763,15 +764,17 @@
         async function fetchUserProfile(userId) {
             const { data, error } = await _supabase
                 .from('profiles')
-                .select('farm_name, subscription_status, subscription_until')
+                .select('farm_name, phone, subscription_status, subscription_until')
                 .eq('id', userId)
                 .single();
             
             if (!error && data) {
                 currentFarmName = data.farm_name || 'Farm Sapi Mandiri';
+                currentUserPhone = data.phone || '';
                 checkSubscriptionExpiry(currentUser, data);
             } else {
                 currentFarmName = 'Farm Sapi Mandiri';
+                currentUserPhone = '';
                 checkTrialStatus(currentUser, 'trial');
             }
         }
@@ -877,6 +880,21 @@
                             `• Email Terdaftar: ${userEmail}%0A%0A` +
                             `Berikut saya lampirkan bukti transfernya. Mohon bantu verifikasi. Terima kasih!`;
             window.open(`https://wa.me/${phoneAdmin}?text=${message}`, '_blank');
+        }
+
+        // FUNGSI KIRIM NOTIFIKASI WHATSAPP OTOMATIS (FONNTE / DIRECT WA)
+        function sendWhatsAppAlert(messageTitle, messageBody) {
+            if (!currentUserPhone) {
+                alert('Nomor WhatsApp belum terdaftar di profil Anda. Silakan hubungi admin atau perbarui data akun.');
+                return;
+            }
+            const fullMessage = `🔔 *SAPIKU NOTIFIKASI OTOMATIS* (%2A${currentFarmName}%2A)%0A%0A` +
+                                `📌 *${messageTitle}*%0A` +
+                                `${messageBody}%0A%0A` +
+                                `_Pesan dikirim otomatis oleh Sistem SapiKu SaaS._`;
+            
+            // Membuka WhatsApp langsung ke nomor peternak terdaftar
+            window.open(`https://wa.me/${currentUserPhone}?text=${fullMessage}`, '_blank');
         }
 
         function scrollToReports() {
@@ -1120,7 +1138,7 @@
             const container = document.getElementById('repro-alerts-list');
             const { data: records, error } = await _supabase
                 .from('health_records')
-                .select('*, cattle(ear_tag, user_id)')
+                .select('*, cattle(ear_tag, name, user_id)')
                 .in('category', ['Inseminasi Buatan (IB)', 'Birahi (Estrus)'])
                 .eq('cattle.user_id', currentUser.id)
                 .order('record_date', { ascending: false });
@@ -1140,24 +1158,35 @@
 
                 const evDate = new Date(ev.record_date);
                 const diffDays = Math.floor((today - evDate) / (1000 * 60 * 60 * 24));
+                const cowName = ev.cattle.name || 'Tanpa Nama';
+                const earTag = ev.cattle.ear_tag;
 
                 if (ev.category === 'Inseminasi Buatan (IB)') {
                     const calvingDate = new Date(evDate);
                     calvingDate.setDate(evDate.getDate() + 280);
                     const daysToCalving = Math.floor((calvingDate - today) / (1000 * 60 * 60 * 24));
+                    const calvingDateStr = calvingDate.toLocaleDateString('id-ID');
 
                     let statusBadge = `<span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-bold text-[10px]">Bunting (~${diffDays} Hari)</span>`;
                     if (daysToCalving <= 30 && daysToCalving >= 0) {
                         statusBadge = `<span class="bg-rose-100 text-rose-700 px-2 py-0.5 rounded font-bold text-[10px]">⚠️ Siap Melahirkan (${daysToCalving} hr lagi)</span>`;
                     }
 
+                    const waMsgTitle = `Pengingat Kebuntingan / Kelahiran Sapi Tag: ${earTag}`;
+                    const waMsgBody = `Sapi *${cowName}* (Tag: ${earTag}) berada pada usia kebuntingan hari ke-${diffDays}. Estimasi tanggal melahirkan: *${calvingDateStr}*. Mohon dipersiapkan kandang persiapan dan pakan khusus laktasi.`;
+
                     alertsHtml += `
-                        <div class="p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl space-y-1">
+                        <div class="p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl space-y-1.5">
                             <div class="flex items-center justify-between">
-                                <span class="font-bold text-slate-900">Sapi Tag: ${ev.cattle.ear_tag} (IB)</span>
+                                <span class="font-bold text-slate-900">Sapi Tag: ${earTag} (${cowName})</span>
                                 ${statusBadge}
                             </div>
-                            <div class="text-[10px] text-slate-500">🐮 Estimasi Melahirkan: <b class="text-slate-700">${calvingDate.toLocaleDateString('id-ID')}</b></div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-[10px] text-slate-500">🐮 Est. Melahirkan: <b class="text-slate-700">${calvingDateStr}</b></span>
+                                <button onclick="sendWhatsAppAlert('${waMsgTitle}', '${waMsgBody}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-2xs">
+                                    <i class="fa-brands fa-whatsapp"></i> Kirim WA
+                                </button>
+                            </div>
                         </div>
                     `;
                 } else if (ev.category === 'Birahi (Estrus)') {
@@ -1168,22 +1197,31 @@
 
                     const daysToNextMin = Math.floor((nextEstrusMin - today) / (1000 * 60 * 60 * 24));
                     const daysToNextMax = Math.floor((nextEstrusMax - today) / (1000 * 60 * 60 * 24));
+                    const estrusRangeStr = `${nextEstrusMin.toLocaleDateString('id-ID')} - ${nextEstrusMax.toLocaleDateString('id-ID')}`;
 
-                    let estrusBadge = `<span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold text-[10px]">Siklus Normal (18-24 hr)</span>`;
+                    let estrusBadge = `<span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold text-[10px]">Siklus Normal</span>`;
                     
                     if (daysToNextMin <= 0 && daysToNextMax >= 0) {
-                        estrusBadge = `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold text-[10px] animate-pulse">🔥 Jendela Birahi Hari Ini! Siapkan IB</span>`;
+                        estrusBadge = `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold text-[10px] animate-pulse">🔥 Jendela Birahi Hari Ini!</span>`;
                     } else if (daysToNextMin > 0) {
-                        estrusBadge = `<span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-bold text-[10px]">Estimasi Birahi Lagi (${daysToNextMin}-${daysToNextMax} hr lagi)</span>`;
+                        estrusBadge = `<span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-bold text-[10px]">Estimasi (${daysToNextMin}-${daysToNextMax} hr lagi)</span>`;
                     }
 
+                    const waMsgTitle = `Peringatan Jendela Birahi (Estrus) Sapi Tag: ${earTag}`;
+                    const waMsgBody = `Sapi *${cowName}* (Tag: ${earTag}) terakhir birahi pada ${ev.record_date}. Rentang estimasi birahi berikutnya adalah *${estrusRangeStr}*. Siapkan inseminator atau amati tanda-tanda birahi hari ini.`;
+
                     alertsHtml += `
-                        <div class="p-2.5 bg-amber-50/40 border border-amber-200/60 rounded-xl space-y-1">
+                        <div class="p-2.5 bg-amber-50/40 border border-amber-200/60 rounded-xl space-y-1.5">
                             <div class="flex items-center justify-between">
-                                <span class="font-bold text-slate-900">Sapi Tag: ${ev.cattle.ear_tag} (Birahi Terakhir)</span>
+                                <span class="font-bold text-slate-900">Sapi Tag: ${earTag} (${cowName})</span>
                                 ${estrusBadge}
                             </div>
-                            <div class="text-[10px] text-slate-600">📅 Tanggal Birahi: ${ev.record_date} | Rentang Siklus: <b>${nextEstrusMin.toLocaleDateString('id-ID')} - ${nextEstrusMax.toLocaleDateString('id-ID')}</b></div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-[10px] text-slate-600">📅 Rentang Siklus: <b>${estrusRangeStr}</b></span>
+                                <button onclick="sendWhatsAppAlert('${waMsgTitle}', '${waMsgBody}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-2xs">
+                                    <i class="fa-brands fa-whatsapp"></i> Kirim WA
+                                </button>
+                            </div>
                         </div>
                     `;
                 }
@@ -1554,11 +1592,11 @@
                 .gte('production_date', sevenDaysAgo.toISOString().split('T')[0]);
 
             if (milkData) {
-                milkData.forEach(m => {
-                    const mDate = new Date(m.production_date);
+                milkData.forEach(sk => {
+                    const mDate = new Date(sk.production_date);
                     const diffTime = Math.floor((mDate - sevenDaysAgo) / (1000 * 60 * 60 * 24));
                     if (diffTime >= 0 && diffTime < 7) {
-                        milkTotals[diffTime] += (parseFloat(m.morning_yield) || 0) + (parseFloat(m.evening_yield) || 0);
+                        milkTotals[diffTime] += (parseFloat(sk.morning_yield) || 0) + (parseFloat(sk.evening_yield) || 0);
                     }
                 });
             }
